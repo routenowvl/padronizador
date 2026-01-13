@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Roteirizador | VIA Group</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+.pill.offline {
+  background: #ffecec !important;
+  color: #9b1c1c !important;
+  border-color: #ffb3b3 !important;
+  font-weight: 800;
+}
+
+.pill.online {
+  background: linear-gradient(135deg, rgba(15,79,168,0.10), rgba(47,164,255,0.14));
+  color: var(--azul);
+}
+
+
+:root {
+  --azul-escuro: #0b1c3d;
+  --azul: #0f4fa8;
+  --azul-claro: #2fa4ff;
+  --branco: #ffffff;
+  --cinza: #f4f6f9;
+  --glass: rgba(255,255,255,0.78);
+  --glass-strong: rgba(255,255,255,0.9);
+  --shadow: 0 35px 90px rgba(0,0,0,0.14);
+}
+
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #eaf2ff, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+/* ===== APP LAYOUT (SIDEBAR + CONTENT) ===== */
+.container {
+  width: 100%;
+  max-width: 980px;
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.8s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 640px;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: relative;
+  padding: 20px 16px;
+  border-right: 1px solid rgba(15,79,168,0.12);
+  background:
+    radial-gradient(700px 420px at 20% 10%, rgba(47,164,255,0.20), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.60));
+  backdrop-filter: blur(18px);
+}
+
+.sidebar::after{
+  content:"";
+  position:absolute;
+  inset: -60px -80px auto auto;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle at 30% 30%, rgba(47,164,255,0.28), rgba(15,79,168,0.10), transparent 62%);
+  filter: blur(2px);
+  pointer-events:none;
+}
+
+.brand {
+  display: grid;
+  gap: 12px;
+  padding: 8px 10px 16px;
+  border-radius: 18px;
+}
+
+.brand .logo {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap: 10px;
+}
+
+.brand .logo img { width: 156px; }
+
+.brand .meta {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(15,79,168,0.10);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.06);
+}
+
+.brand .meta b{
+  font-size: 12px;
+  color: var(--azul-escuro);
+  letter-spacing: 0.2px;
+}
+
+.brand .pill{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(47,164,255,0.25);
+  background: linear-gradient(135deg, rgba(15,79,168,0.10), rgba(47,164,255,0.14));
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pulse-mini {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--azul);
+  box-shadow: 0 0 0 0 rgba(47,164,255,0.55);
+  animation: pulse 1.2s infinite;
+  flex: 0 0 auto;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(47,164,255,0.55); transform: scale(0.95); }
+  70% { box-shadow: 0 0 0 12px rgba(47,164,255,0); transform: scale(1); }
+  100% { box-shadow: 0 0 0 0 rgba(47,164,255,0); transform: scale(0.98); }
+}
+
+.nav {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.nav-title {
+  margin: 10px 8px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .7px;
+  color: rgba(11,28,61,0.62);
+  text-transform: uppercase;
+}
+
+.nav-btn{
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  padding: 12px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.68);
+  border: 1px solid rgba(15,79,168,0.10);
+  box-shadow: 0 16px 44px rgba(0,0,0,0.06);
+  transition: all .35s ease;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-btn::before{
+  content:"";
+  position:absolute;
+  inset: 0;
+  background: radial-gradient(520px 160px at 0% 50%, rgba(47,164,255,0.22), transparent 60%);
+  opacity: 0;
+  transition: opacity .35s ease;
+  pointer-events:none;
+}
+
+.nav-btn:hover{
+  transform: translateY(-2px);
+  border-color: rgba(47,164,255,0.42);
+  box-shadow: 0 22px 65px rgba(15,79,168,0.14);
+}
+
+.nav-btn:hover::before{ opacity: 1; }
+
+.nav-btn:active{ transform: scale(0.98); }
+
+.nav-left{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nav-ico{
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  background: linear-gradient(135deg, rgba(15,79,168,0.12), rgba(47,164,255,0.14));
+  border: 1px solid rgba(47,164,255,0.28);
+  color: var(--azul);
+  transition: all .35s ease;
+}
+
+.nav-btn:hover .nav-ico{
+  transform: rotate(-2deg) scale(1.04);
+  border-color: rgba(47,164,255,0.5);
+  box-shadow: 0 14px 35px rgba(47,164,255,0.18);
+}
+
+.nav-label{
+  display:grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.nav-label b{
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--azul-escuro);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-label span{
+  font-size: 11.5px;
+  color: rgba(75,93,130,0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-chip{
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(11,28,61,0.72);
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(11,28,61,0.10);
+  background: rgba(255,255,255,0.62);
+}
+
+.nav-btn.active{
+  background: linear-gradient(135deg, rgba(15,79,168,0.14), rgba(47,164,255,0.14));
+  border-color: rgba(15,79,168,0.25);
+  box-shadow: 0 26px 80px rgba(15,79,168,0.16);
+}
+
+.nav-btn.active .nav-chip{
+  color: var(--azul);
+  border-color: rgba(47,164,255,0.35);
+  background: rgba(255,255,255,0.75);
+}
+
+.sidebar-footer{
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15,79,168,0.10);
+  background: rgba(255,255,255,0.62);
+  color: rgba(91,107,139,0.95);
+  font-size: 11.5px;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.06);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  padding: 34px 34px 28px;
+  position: relative;
+}
+
+h1 {
+  text-align: center;
+  color: var(--azul-escuro);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #5b6b8b;
+  font-size: 14px;
+  margin-bottom: 26px;
+}
+
+.form-group { margin-bottom: 22px; }
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* ===== SELECT CUSTOM ===== */
+.custom-select { position: relative; width: 100%; z-index: 1; }
+
+/* garante que o dropdown fique acima de qualquer item/section */
+.custom-select.open-wrap { z-index: 10000; }
+
+.select-selected {
+  background: #fff;
+  padding: 15px 18px;
+  border-radius: 16px;
+  border: 1px solid #d9e2ef;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.35s ease;
+  user-select: none;
+}
+
+.select-selected:hover { border-color: var(--azul-claro); }
+
+.select-selected.active {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 4px rgba(47,164,255,0.25);
+}
+
+.select-items {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.18);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+  transition: all 0.35s ease;
+  z-index: 9999; /* <- ajustado para não ficar abaixo de outros itens */
+}
+
+.select-items.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.select-items div {
+  padding: 15px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.select-items div:hover {
+  background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+  color: white;
+  transform: scale(1.015);
+}
+
+/* ===== MÊS: SCROLL + "DRAG BAR" (barrinha fina) ===== */
+#monthOptions{
+  max-height: 280px;           /* mostra ~1 a 6/7, o restante no scroll */
+  overflow-y: auto;            /* habilita scroll */
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;    /* mantém espaço do scroll estável */
+}
+
+/* Chrome/Edge */
+#monthOptions::-webkit-scrollbar { width: 8px; }
+#monthOptions::-webkit-scrollbar-track {
+  background: rgba(11,28,61,0.06);
+}
+#monthOptions::-webkit-scrollbar-thumb {
+  background: rgba(15,79,168,0.22);
+  border-radius: 999px;
+}
+#monthOptions::-webkit-scrollbar-thumb:hover {
+  background: rgba(15,79,168,0.34);
+}
+
+/* Firefox */
+#monthOptions{
+  scrollbar-width: thin;
+  scrollbar-color: rgba(15,79,168,0.28) rgba(11,28,61,0.06);
+}
+
+/* ===== GRID PARA FILIAL / ANO / MÊS ===== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 760px){
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ===== UPLOAD ===== */
+.upload-area {
+  border: 2px dashed #cfd9ea;
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  background: #fdfefe;
+  transition: all 0.35s ease;
+}
+
+.upload-area:hover {
+  border-color: var(--azul);
+  background: #f3f8ff;
+}
+
+.upload-area input { margin-top: 8px; }
+
+.upload-area span {
+  display: block;
+  font-size: 13px;
+  color: #6c7a99;
+  margin-top: 8px;
+}
+
+/* ===== BOTÕES ===== */
+button, .btn {
+  width: 100%;
+  padding: 17px;
+  border-radius: 18px;
+  border: none;
+  background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  box-shadow: 0 18px 40px rgba(15,79,168,0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 26px 55px rgba(15,79,168,0.5);
+}
+
+button:active, .btn:active { transform: scale(0.97); }
+
+.btn.secondary {
+  background: #fff;
+  color: var(--azul-escuro);
+  border: 1px solid #d9e2ef;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+}
+
+.btn.secondary:hover {
+  border-color: var(--azul-claro);
+  box-shadow: 0 22px 55px rgba(0,0,0,0.12);
+}
+
+.footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 12px;
+  color: #7b8aad;
+}
+
+/* ===== TELAS (FORM / RESULT) ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.result-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  margin: 6px 0 8px;
+}
+
+.result-sub {
+  text-align: center;
+  font-size: 13px;
+  color: #5b6b8b;
+  margin: 0 0 22px;
+}
+
+.result-box {
+  background: var(--glass-strong);
+  border: 1px solid #d9e2ef;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.08);
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px 10px;
+  font-size: 13px;
+  color: #4b5d82;
+}
+
+.kv b { color: var(--azul-escuro); font-weight: 700; }
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ===== LOADING OVERLAY ===== */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(900px 420px at 50% 20%, rgba(47,164,255,0.18), rgba(255,255,255,0.92));
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999; /* mantém acima de tudo */
+  padding: 18px;
+}
+
+.loading-overlay.show { display: flex; }
+
+.loading-card {
+  width: min(560px, 92vw);
+  background: var(--glass-strong);
+  border: 1px solid rgba(15,79,168,0.15);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.18);
+  backdrop-filter: blur(18px);
+  animation: pop 0.35s ease;
+}
+
+@keyframes pop {
+  from { transform: translateY(10px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.loading-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.loading-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+}
+
+.loading-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #5b6b8b;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--azul);
+  box-shadow: 0 0 0 0 rgba(47,164,255,0.6);
+  animation: pulse 1.2s infinite;
+  flex: 0 0 auto;
+}
+
+.progress-wrap {
+  margin-top: 12px;
+  background: rgba(11,28,61,0.06);
+  border: 1px solid rgba(11,28,61,0.08);
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.progress-bar {
+  height: 14px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(47,164,255,0.15), rgba(15,79,168,0.25));
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--azul), var(--azul-claro));
+  transition: width 0.25s ease;
+  position: relative;
+}
+
+.progress-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 45%, transparent 70%);
+  transform: translateX(-100%);
+  animation: shine 1.2s linear infinite;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  to { transform: translateX(120%); }
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #5b6b8b;
+}
+
+.step-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(15,79,168,0.08);
+  font-size: 12px;
+  color: #4b5d82;
+}
+
+.step .badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(15,79,168,0.12);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: var(--azul);
+}
+
+.step.active {
+  border-color: rgba(47,164,255,0.35);
+  box-shadow: 0 18px 40px rgba(47,164,255,0.12);
+}
+
+.step.done .badge {
+  background: rgba(47,164,255,0.18);
+  color: var(--azul-escuro);
+}
+
+.error-box {
+  margin-top: 12px;
+  background: #fff5f5;
+  border: 1px solid #ffd1d1;
+  color: #9b1c1c;
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.small {
+  font-size: 12px;
+  color: #6c7a99;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 920px){
+  .container{ max-width: 92vw; }
+  .app{ grid-template-columns: 220px 1fr; }
+}
+@media (max-width: 760px){
+  body{ align-items: flex-start; padding: 14px; }
+  .app{ grid-template-columns: 1fr; }
+  .sidebar{ border-right: 0; border-bottom: 1px solid rgba(15,79,168,0.12); }
+  .content{ padding: 22px 18px 18px; }
+  .nav{ grid-template-columns: 1fr 1fr; }
+  .nav-title{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="loading-card">
+    <div class="loading-top">
+      <div>
+        <div class="loading-title" id="loadingTitle">Processando</div>
+        <div class="loading-sub" id="loadingSub">Preparando arquivo…</div>
+      </div>
+      <div class="pulse-dot" aria-hidden="true"></div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill">
+          <div class="progress-shine"></div>
+        </div>
+      </div>
+
+      <div class="progress-meta">
+        <div id="progressLabel">0%</div>
+        <div id="progressTime">—</div>
+      </div>
+    </div>
+
+    <div class="step-list" id="stepList">
+      <div class="step active" data-step="1"><div class="badge">1</div><div>Enviando arquivo</div></div>
+      <div class="step" data-step="2"><div class="badge">2</div><div>Validando estrutura</div></div>
+      <div class="step" data-step="3"><div class="badge">3</div><div>Convertendo para padrão</div></div>
+      <div class="step" data-step="4"><div class="badge">4</div><div>Gerando XLSX final</div></div>
+      <div class="step" data-step="5"><div class="badge">5</div><div>Finalizando e preparando download</div></div>
+    </div>
+
+    <div class="small">Aguarde até que pronto, caso falhe, reinicie a página.</div>
+    <div class="error-box" id="errorBox" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">
+          <img src="https://viagroup.com.br/assets/via_group-22fac685.png" alt="VIA Group">
+        </div>
+        <div class="meta">
+          <b>Fluxo N8N</b>
+          <div class="pill"><span class="pulse-mini"></span>online</div>
+        </div>
+      </div>
+
+      <div class="nav-title">Módulos</div>
+
+      <nav class="nav" aria-label="Navegação">
+        <button class="nav-btn active" type="button" data-tab="padronizador">
+          <div class="nav-left">
+            <div class="nav-ico" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M6 4h4a3 3 0 1 1 0 6H8a3 3 0 0 0 0 6h2a3 3 0 1 1 0 6H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M18 4h-4a3 3 0 0 0 0 6h2a3 3 0 0 1 0 6h-2a3 3 0 0 0 0 6h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="nav-label">
+              <b>Padronizador</b>
+              <span>CCPR • PIRACANJUBA • NESTLÉ</span>
+            </div>
+          </div>
+          <div class="nav-chip">ROT</div>
+        </button>
+
+        <button class="nav-btn" type="button" data-tab="importkm">
+          <div class="nav-left">
+            <div class="nav-ico" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M20 13a8 8 0 1 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 13l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 13h.01M18 13h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M12 5v.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="nav-label">
+              <b>Importação de KM</b>
+              <span>ITALAC • ITA-PF • ITA-CS • ITA-TP</span>
+            </div>
+          </div>
+          <div class="nav-chip">KM</div>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        VIA Group • Automação &amp; Padronização<br>
+        <span style="opacity:.75">Webhooks via n8n (upload + download)</span>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- PADRONIZADOR -->
+      <div class="screen active" id="screenPadronizador">
+        <h1>Padronizador</h1>
+        <div class="subtitle">Envio inteligente de arquivos para padronização de rotas</div>
+
+        <form class="js-upload-form"
+          id="uploadFormRoteiro"
+          data-mode="roteiro"
+          action="https://n8n.datastack.viagroup.com.br/webhook/upload-arquivo"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <div class="form-group">
+            <label>Empresa</label>
+
+            <div class="custom-select">
+              <div class="select-selected">Selecione a empresa</div>
+              <div class="select-items">
+                <div data-value="CCPR">CCPR</div>
+                <div data-value="PIRACANJUBA">PIRACANJUBA</div>
+                <div data-value="NESTLE">NESTLÉ</div>
+                <div data-value="DANONE">DANONE</div>
+                <div data-value="LAT-PASSOS">LAT-PASSOS</div>
+                <div data-value="CATUPIRY">CATUPIRY (STV)</div>
+              </div>
+            </div>
+
+            <input type="hidden" name="empresa" required>
+          </div>
+
+          <div class="form-group upload-area">
+            <label>Arquivo</label>
+            <input id="fileInputRoteiro" type="file" name="file" accept=".csv,.pdf,.xls,.xlsx" required>
+            <span>CSV, PDF, XLS ou XLSX</span>
+          </div>
+
+          <button type="submit">Enviar para Processamento</button>
+        </form>
+
+        <div class="footer">VIA Group • Automação & Roteirização Inteligente</div>
+      </div>
+
+      <!-- IMPORTAÇÃO DE KM -->
+      <div class="screen" id="screenImportKm">
+        <h1>Importação de KM</h1>
+        <div class="subtitle">Converta importações de KM das filiais ITALAC para o padrão final</div>
+
+        <form class="js-upload-form"
+          id="uploadFormKm"
+          data-mode="importkm"
+          action="https://n8n.datastack.viagroup.com.br/webhook/importa-km"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <input type="hidden" name="modulo" value="IMPORT_KM">
+
+          <div class="form-group">
+            <label>Filial</label>
+
+            <div class="custom-select">
+              <div class="select-selected">Selecione a filial</div>
+              <div class="select-items">
+                <div data-value="ITA-PF">ITA-PF</div>
+                <div data-value="ITA-CS">ITA-CS</div>
+                <div data-value="ITA-TP">ITA-TP</div>
+              </div>
+            </div>
+
+            <input type="hidden" name="filial" required>
+          </div>
+
+          <!-- Ano e mês (abaixo da filial) -->
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Ano</label>
+              <div class="custom-select">
+                <div class="select-selected" id="yearSelected">Selecione o ano</div>
+                <div class="select-items" id="yearOptions"></div>
+              </div>
+              <input type="hidden" name="ano" id="anoInput" required>
+            </div>
+
+            <div class="form-group">
+              <label>Mês</label>
+              <div class="custom-select">
+                <div class="select-selected">Selecione o mês</div>
+                <div class="select-items" id="monthOptions">
+                  <div data-value="1">1</div><div data-value="2">2</div><div data-value="3">3</div><div data-value="4">4</div>
+                  <div data-value="5">5</div><div data-value="6">6</div><div data-value="7">7</div><div data-value="8">8</div>
+                  <div data-value="9">9</div><div data-value="10">10</div><div data-value="11">11</div><div data-value="12">12</div>
+                </div>
+              </div>
+              <input type="hidden" name="mes" id="mesInput" required>
+            </div>
+          </div>
+
+          <div class="form-group upload-area">
+            <label>Arquivo de Importação</label>
+            <input id="fileInputKm" type="file" name="file" accept=".csv,.xls,.xlsx" required>
+            <span>CSV, XLS ou XLSX</span>
+          </div>
+
+          <button type="submit">Converter Importação de KM</button>
+        </form>
+
+        <div class="footer">VIA Group • Módulo ITALAC</div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="screen" id="screenResult">
+        <h1 id="resTitleTop">Pronto</h1>
+        <div class="result-title">Arquivo pronto</div>
+        <div class="result-sub">Seu arquivo foi processado e já pode ser baixado.</div>
+
+        <div class="result-box">
+          <div class="kv">
+            <b>Módulo</b><div id="resModulo">—</div>
+            <b>Origem</b><div id="resOrigem">—</div>
+            <b>Arquivo</b><div id="resFileName">—</div>
+            <b>Status</b><div id="resStatus">—</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="btn" id="btnDownload" href="#" download>Download</a>
+          <button class="btn secondary" id="btnAgain" type="button">Voltar</button>
+        </div>
+
+        <div class="footer">VIA Group • Automação & Padronização</div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+async function checkN8nStatus() {
+  const pill = document.querySelector('.brand .pill');
+  if (!pill) return;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+
+    const res = await fetch(
+      'https://n8n.datastack.viagroup.com.br/webhook/online',
+      { signal: controller.signal }
+    );
+
+    clearTimeout(timeout);
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+
+    if (data.status === 'online') {
+      pill.innerHTML = '<span class="pulse-mini"></span>online';
+      pill.style.background =
+        'linear-gradient(135deg, rgba(15,79,168,0.10), rgba(47,164,255,0.14))';
+      pill.style.color = '#0f4fa8';
+    } else {
+      throw new Error('offline');
+    }
+
+  } catch (e) {
+    pill.innerHTML = 'offline';
+    pill.style.background = '#ffecec';
+    pill.style.color = '#b00020';
+  }
+}
+
+// checa ao abrir
+checkN8nStatus();
+
+// checa a cada 15s
+setInterval(checkN8nStatus, 60000);
+
+
+
+/* ===== SELECT CUSTOM (multi) ===== */
+function closeAllSelects(exceptSelect=null){
+  document.querySelectorAll('.custom-select').forEach(s => {
+    if (exceptSelect && s === exceptSelect) return;
+    s.classList.remove('open-wrap');
+    const it = s.querySelector('.select-items');
+    const se = s.querySelector('.select-selected');
+    if (it) it.classList.remove('open');
+    if (se) se.classList.remove('active');
+  });
+}
+
+function initCustomSelects(root=document){
+  root.querySelectorAll('.custom-select').forEach(select => {
+    if (select.dataset.inited === '1') return;
+    select.dataset.inited = '1';
+
+    const selected = select.querySelector('.select-selected');
+    const items = select.querySelector('.select-items');
+    const hiddenInput =
+      select.parentElement.querySelector('input[type="hidden"]') ||
+      select.closest('.form-group')?.querySelector('input[type="hidden"]');
+
+    selected.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+
+      const willOpen = !items.classList.contains('open');
+      closeAllSelects(select);
+
+      if (willOpen) {
+        items.classList.add('open');
+        selected.classList.add('active');
+        select.classList.add('open-wrap');
+      } else {
+        items.classList.remove('open');
+        selected.classList.remove('active');
+        select.classList.remove('open-wrap');
+      }
+    });
+
+    items.querySelectorAll('div').forEach(option => {
+      option.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+
+        selected.textContent = option.textContent;
+        if (hiddenInput) hiddenInput.value = option.dataset.value ?? option.textContent;
+
+        items.classList.remove('open');
+        selected.classList.remove('active');
+        select.classList.remove('open-wrap');
+      });
+    });
+  });
+}
+
+document.addEventListener('click', () => closeAllSelects());
+
+/* ===== ANO (default atual, com opção de trocar) ===== */
+(function initYearPicker(){
+  const currentYear = new Date().getFullYear();
+  const yearStart = currentYear - 3;
+  const yearEnd = currentYear + 3;
+
+  const yearOptions = document.getElementById('yearOptions');
+  const anoInput = document.getElementById('anoInput');
+  const yearSelected = document.getElementById('yearSelected');
+
+  if (!yearOptions || !anoInput || !yearSelected) return;
+
+  yearOptions.innerHTML = '';
+  for (let y = yearEnd; y >= yearStart; y--) {
+    const div = document.createElement('div');
+    div.dataset.value = String(y);
+    div.textContent = String(y);
+    yearOptions.appendChild(div);
+  }
+
+  anoInput.value = String(currentYear);
+  yearSelected.textContent = String(currentYear);
+
+  initCustomSelects(document.getElementById('screenImportKm'));
+})();
+
+/* ===== MÊS hidden input binding ===== */
+(function bindMonthHidden(){
+  const monthSelect = document.getElementById('monthOptions');
+  const mesInput = document.getElementById('mesInput');
+  if (!monthSelect || !mesInput) return;
+
+  monthSelect.querySelectorAll('div').forEach(opt => {
+    opt.addEventListener('click', () => {
+      mesInput.value = opt.dataset.value ?? opt.textContent;
+    });
+  });
+})();
+
+initCustomSelects();
+
+/* ===== NAV (SIDEBAR) ===== */
+const tabs = document.querySelectorAll('.nav-btn');
+
+function setActiveTab(tabName){
+  tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
+
+  document.getElementById('screenPadronizador').classList.toggle('active', tabName === 'padronizador');
+  document.getElementById('screenImportKm').classList.toggle('active', tabName === 'importkm');
+  document.getElementById('screenResult').classList.remove('active');
+
+  closeAllSelects();
+}
+
+tabs.forEach(btn => {
+  btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+});
+
+/* ===== UI HELPERS ===== */
+const $ = (id) => document.getElementById(id);
+
+function showLoading() { $('loading').classList.add('show'); }
+function hideLoading() { $('loading').classList.remove('show'); }
+function setError(msg) {
+  const box = $('errorBox');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+function clearError() {
+  const box = $('errorBox');
+  box.style.display = 'none';
+  box.textContent = '';
+}
+
+function setLoadingMode(mode){
+  const title = mode === 'importkm' ? 'Processando Importação de KM' : 'Processando roteirização';
+  $('loadingTitle').textContent = title;
+
+  const steps = $('stepList').querySelectorAll('.step');
+  const labels = mode === 'importkm'
+    ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo KM para padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
+    : ['Enviando arquivo', 'Validando estrutura', 'Convertendo para padrão', 'Gerando XLSX final', 'Finalizando e preparando download'];
+
+  steps.forEach((el, idx) => {
+    const txt = el.querySelector('div:last-child');
+    if (txt) txt.textContent = labels[idx] || txt.textContent;
+  });
+}
+
+function setProgress(pct, sub, step) {
+  $('progressFill').style.width = pct + '%';
+  $('progressLabel').textContent = pct + '%';
+  if (sub) $('loadingSub').textContent = sub;
+
+  document.querySelectorAll('.step').forEach(el => {
+    const n = Number(el.dataset.step);
+    el.classList.toggle('done', step && n < step);
+    el.classList.toggle('active', step && n === step);
+  });
+}
+
+function switchToResult() {
+  $('screenPadronizador').classList.remove('active');
+  $('screenImportKm').classList.remove('active');
+  $('screenResult').classList.add('active');
+}
+
+/* ===== VOLTAR ===== */
+$('btnAgain').addEventListener('click', () => {
+  document.querySelectorAll('.js-upload-form').forEach(f => f.reset());
+
+  const selEmpresa = document.querySelector('#screenPadronizador .custom-select .select-selected');
+  if (selEmpresa) selEmpresa.textContent = 'Selecione a empresa';
+
+  const selFilial = document.querySelector('#screenImportKm .custom-select .select-selected');
+  if (selFilial) selFilial.textContent = 'Selecione a filial';
+
+  const currentYear = new Date().getFullYear();
+  const anoInput = document.getElementById('anoInput');
+  const yearSelected = document.getElementById('yearSelected');
+  if (anoInput && yearSelected) {
+    anoInput.value = String(currentYear);
+    yearSelected.textContent = String(currentYear);
+  }
+
+  const mesInput = document.getElementById('mesInput');
+  const monthSelected = document.querySelector('#screenImportKm #monthOptions')?.parentElement?.querySelector('.select-selected');
+  if (mesInput) mesInput.value = '';
+  if (monthSelected) monthSelected.textContent = 'Selecione o mês';
+
+  const active = document.querySelector('.nav-btn.active')?.dataset.tab || 'padronizador';
+  setActiveTab(active);
+});
+
+/* ===== SUBMIT (2 forms) ===== */
+document.querySelectorAll('.js-upload-form').forEach(form => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const mode = form.dataset.mode || 'roteiro';
+    setLoadingMode(mode);
+
+    if (mode === 'roteiro') {
+      const empresa = form.querySelector('input[name="empresa"]').value;
+      const file = document.getElementById('fileInputRoteiro')?.files?.[0];
+      if (!empresa) { alert('Selecione a empresa'); return; }
+      if (!file) { alert('Selecione um arquivo'); return; }
+    } else {
+      const filial = form.querySelector('input[name="filial"]').value;
+      const ano = form.querySelector('input[name="ano"]').value;
+      const mes = form.querySelector('input[name="mes"]').value;
+      const file = document.getElementById('fileInputKm')?.files?.[0];
+
+      if (!filial) { alert('Selecione a filial'); return; }
+      if (!ano) { alert('Selecione o ano'); return; }
+      if (!mes) { alert('Selecione o mês'); return; }
+      if (!file) { alert('Selecione um arquivo'); return; }
+    }
+
+    showLoading();
+    const start = Date.now();
+    let timer = null;
+
+    const steps = mode === 'importkm'
+      ? [
+          { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
+          { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
+          { pctTo: 72, step: 3, sub: 'Convertendo KM para padrão…' },
+          { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
+          { pctTo: 99, step: 5, sub: 'Finalizando…' },
+        ]
+      : [
+          { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
+          { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
+          { pctTo: 72, step: 3, sub: 'Convertendo para padrão…' },
+          { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
+          { pctTo: 99, step: 5, sub: 'Finalizando…' },
+        ];
+
+    function msToHuman(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      if (s < 60) return `${s}s`;
+      const m = Math.floor(s / 60);
+      return `${m}m ${s % 60}s`;
+    }
+
+    let pct = 0;
+    let iStep = 0;
+    setProgress(0, 'Preparando arquivo…', 1);
+
+    timer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      $('progressTime').textContent = `tempo: ${msToHuman(elapsed)}`;
+
+      const st = steps[iStep] || steps[steps.length - 1];
+      const inc = Math.random() * 3 + 1;
+      pct = Math.min(st.pctTo, pct + inc);
+
+      setProgress(Math.floor(pct), st.sub, st.step);
+
+      if (pct >= st.pctTo && iStep < steps.length - 1) iStep++;
+    }, 180);
+
+    try {
+      const fd = new FormData(form);
+      const res = await fetch(form.action, { method: 'POST', body: fd });
+
+      if (!res.ok) throw new Error(`Falha no processamento (HTTP ${res.status}).`);
+
+      const blob = await res.blob();
+
+      const disp = res.headers.get('content-disposition') || '';
+      const match = disp.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
+      const fileName = decodeURIComponent((match && (match[1] || match[2])) || 'VIA_GROUP_PROCESSADO.xlsx');
+
+      const url = URL.createObjectURL(blob);
+      const a = $('btnDownload');
+      a.href = url;
+      a.download = fileName;
+
+      const origem = mode === 'importkm'
+        ? (form.querySelector('input[name="filial"]').value || '—')
+        : (form.querySelector('input[name="empresa"]').value || '—');
+
+      $('resModulo').textContent = mode === 'importkm' ? 'Importação de KM' : 'Padronizador';
+      $('resOrigem').textContent = origem;
+      $('resFileName').textContent = fileName;
+      $('resStatus').textContent = 'Concluído';
+      $('resTitleTop').textContent = mode === 'importkm' ? 'Importação de KM' : 'Padronizador';
+
+      setProgress(100, 'Pronto!', 5);
+      clearInterval(timer);
+      setTimeout(() => {
+        hideLoading();
+        switchToResult();
+      }, 350);
+
+    } catch (err) {
+      clearInterval(timer);
+      setProgress(20, 'Erro ao processar.', 1);
+      setError(err.message || 'Erro desconhecido.');
+    }
+  });
+});
+</script>
+
+</body>
+</html>
