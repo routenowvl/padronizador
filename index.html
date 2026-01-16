@@ -14,7 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-
 .pill.offline {
   background: #ffecec !important;
   color: #9b1c1c !important;
@@ -26,7 +25,6 @@
   background: linear-gradient(135deg, rgba(15,79,168,0.10), rgba(47,164,255,0.14));
   color: var(--azul);
 }
-
 
 :root {
   --azul-escuro: #0b1c3d;
@@ -364,7 +362,7 @@ label {
   transform: translateY(-12px);
   pointer-events: none;
   transition: all 0.35s ease;
-  z-index: 9999; /* <- ajustado para não ficar abaixo de outros itens */
+  z-index: 9999;
 }
 
 .select-items.open {
@@ -386,27 +384,23 @@ label {
   transform: scale(1.015);
 }
 
-/* ===== MÊS: SCROLL + "DRAG BAR" (barrinha fina) ===== */
+/* ===== MÊS: SCROLL ===== */
 #monthOptions{
-  max-height: 280px;           /* mostra ~1 a 6/7, o restante no scroll */
-  overflow-y: auto;            /* habilita scroll */
+  max-height: 280px;
+  overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;    /* mantém espaço do scroll estável */
+  scrollbar-gutter: stable;
 }
 
 /* Chrome/Edge */
 #monthOptions::-webkit-scrollbar { width: 8px; }
-#monthOptions::-webkit-scrollbar-track {
-  background: rgba(11,28,61,0.06);
-}
+#monthOptions::-webkit-scrollbar-track { background: rgba(11,28,61,0.06); }
 #monthOptions::-webkit-scrollbar-thumb {
   background: rgba(15,79,168,0.22);
   border-radius: 999px;
 }
-#monthOptions::-webkit-scrollbar-thumb:hover {
-  background: rgba(15,79,168,0.34);
-}
+#monthOptions::-webkit-scrollbar-thumb:hover { background: rgba(15,79,168,0.34); }
 
 /* Firefox */
 #monthOptions{
@@ -414,7 +408,7 @@ label {
   scrollbar-color: rgba(15,79,168,0.28) rgba(11,28,61,0.06);
 }
 
-/* ===== GRID PARA FILIAL / ANO / MÊS ===== */
+/* ===== GRID ===== */
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -495,7 +489,7 @@ button:active, .btn:active { transform: scale(0.97); }
   color: #7b8aad;
 }
 
-/* ===== TELAS (FORM / RESULT) ===== */
+/* ===== TELAS ===== */
 .screen { display: none; }
 
 .screen.active {
@@ -561,7 +555,7 @@ button:active, .btn:active { transform: scale(0.97); }
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 999999; /* mantém acima de tudo */
+  z-index: 999999;
   padding: 18px;
 }
 
@@ -648,9 +642,7 @@ button:active, .btn:active { transform: scale(0.97); }
   pointer-events: none;
 }
 
-@keyframes shine {
-  to { transform: translateX(120%); }
-}
+@keyframes shine { to { transform: translateX(120%); } }
 
 .progress-meta {
   display: flex;
@@ -790,6 +782,7 @@ button:active, .btn:active { transform: scale(0.97); }
       <div class="nav-title">Módulos</div>
 
       <nav class="nav" aria-label="Navegação">
+        <!-- 1) PADRONIZADOR -->
         <button class="nav-btn active" type="button" data-tab="padronizador">
           <div class="nav-left">
             <div class="nav-ico" aria-hidden="true">
@@ -806,6 +799,26 @@ button:active, .btn:active { transform: scale(0.97); }
           <div class="nav-chip">ROT</div>
         </button>
 
+        <!-- 2) ESCALA PADRÃO -->
+        <button class="nav-btn" type="button" data-tab="escala">
+          <div class="nav-left">
+            <div class="nav-ico" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M7 7h10M7 12h10M7 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 6.5a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z" fill="currentColor"/>
+                <path d="M4 11.5a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z" fill="currentColor"/>
+                <path d="M4 16.5a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="nav-label">
+              <b>Aplicar Escala Padrão</b>
+              <span>XLSX padronizado + Escala Padrão</span>
+            </div>
+          </div>
+          <div class="nav-chip">ESC</div>
+        </button>
+
+        <!-- 3) IMPORTAÇÃO DE KM -->
         <button class="nav-btn" type="button" data-tab="importkm">
           <div class="nav-left">
             <div class="nav-ico" aria-hidden="true">
@@ -834,7 +847,7 @@ button:active, .btn:active { transform: scale(0.97); }
     <!-- CONTENT -->
     <main class="content">
 
-      <!-- PADRONIZADOR -->
+      <!-- 1) PADRONIZADOR -->
       <div class="screen active" id="screenPadronizador">
         <h1>Padronizador</h1>
         <div class="subtitle">Envio inteligente de arquivos para padronização de rotas</div>
@@ -876,7 +889,39 @@ button:active, .btn:active { transform: scale(0.97); }
         <div class="footer">VIA Group • Automação & Roteirização Inteligente</div>
       </div>
 
-      <!-- IMPORTAÇÃO DE KM -->
+      <!-- 2) ESCALA PADRÃO -->
+      <div class="screen" id="screenEscala">
+        <h1>Aplicar Escala Padrão</h1>
+        <div class="subtitle">Envie o XLSX padronizado + a Escala Padrão e aplique em um único clique</div>
+
+        <form class="js-upload-form"
+          id="uploadFormEscala"
+          data-mode="escala"
+          action="https://n8n.datastack.viagroup.com.br/webhook/ESCALA-PADRAO"
+          method="post"
+          enctype="multipart/form-data"
+        >
+          <input type="hidden" name="modulo" value="APLICAR_ESCALA_PADRAO">
+
+          <div class="form-group upload-area">
+            <label>Arquivo Padronizado (XLSX)</label>
+            <input id="fileInputEscalaPadronizado" type="file" name="file_padronizado" accept=".xlsx" required>
+            <span>Sempre XLSX (padronizado)</span>
+          </div>
+
+          <div class="form-group upload-area">
+            <label>Escala Padrão</label>
+            <input id="fileInputEscala" type="file" name="file_escala" accept=".xlsx" required>
+            <span>XLSX (escala padrão)</span>
+          </div>
+
+          <button type="submit">Aplicar Escala</button>
+        </form>
+
+        <div class="footer">VIA Group • Teste de Escala</div>
+      </div>
+
+      <!-- 3) IMPORTAÇÃO DE KM -->
       <div class="screen" id="screenImportKm">
         <h1>Importação de KM</h1>
         <div class="subtitle">Converta importações de KM das filiais ITALAC para o padrão final</div>
@@ -905,7 +950,6 @@ button:active, .btn:active { transform: scale(0.97); }
             <input type="hidden" name="filial" required>
           </div>
 
-          <!-- Ano e mês (abaixo da filial) -->
           <div class="grid-2">
             <div class="form-group">
               <label>Ano</label>
@@ -1005,13 +1049,8 @@ async function checkN8nStatus() {
   }
 }
 
-// checa ao abrir
 checkN8nStatus();
-
-// checa a cada 15s
 setInterval(checkN8nStatus, 60000);
-
-
 
 /* ===== SELECT CUSTOM (multi) ===== */
 function closeAllSelects(exceptSelect=null){
@@ -1070,7 +1109,7 @@ function initCustomSelects(root=document){
 
 document.addEventListener('click', () => closeAllSelects());
 
-/* ===== ANO (default atual, com opção de trocar) ===== */
+/* ===== ANO (default atual) ===== */
 (function initYearPicker(){
   const currentYear = new Date().getFullYear();
   const yearStart = currentYear - 3;
@@ -1118,6 +1157,7 @@ function setActiveTab(tabName){
   tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
   document.getElementById('screenPadronizador').classList.toggle('active', tabName === 'padronizador');
+  document.getElementById('screenEscala').classList.toggle('active', tabName === 'escala');
   document.getElementById('screenImportKm').classList.toggle('active', tabName === 'importkm');
   document.getElementById('screenResult').classList.remove('active');
 
@@ -1145,13 +1185,19 @@ function clearError() {
 }
 
 function setLoadingMode(mode){
-  const title = mode === 'importkm' ? 'Processando Importação de KM' : 'Processando roteirização';
+  let title = 'Processando';
+  if (mode === 'importkm') title = 'Processando Importação de KM';
+  if (mode === 'roteiro') title = 'Processando roteirização';
+  if (mode === 'escala')  title = 'Aplicando Escala Padrão';
   $('loadingTitle').textContent = title;
 
   const steps = $('stepList').querySelectorAll('.step');
-  const labels = mode === 'importkm'
-    ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo KM para padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
-    : ['Enviando arquivo', 'Validando estrutura', 'Convertendo para padrão', 'Gerando XLSX final', 'Finalizando e preparando download'];
+  const labels =
+    mode === 'importkm'
+      ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo KM para padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
+      : mode === 'escala'
+        ? ['Enviando arquivos', 'Validando estrutura', 'Aplicando escala padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
+        : ['Enviando arquivo', 'Validando estrutura', 'Convertendo para padrão', 'Gerando XLSX final', 'Finalizando e preparando download'];
 
   steps.forEach((el, idx) => {
     const txt = el.querySelector('div:last-child');
@@ -1173,6 +1219,7 @@ function setProgress(pct, sub, step) {
 
 function switchToResult() {
   $('screenPadronizador').classList.remove('active');
+  $('screenEscala').classList.remove('active');
   $('screenImportKm').classList.remove('active');
   $('screenResult').classList.add('active');
 }
@@ -1204,7 +1251,7 @@ $('btnAgain').addEventListener('click', () => {
   setActiveTab(active);
 });
 
-/* ===== SUBMIT (2 forms) ===== */
+/* ===== SUBMIT (3 forms) ===== */
 document.querySelectorAll('.js-upload-form').forEach(form => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1218,7 +1265,7 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       const file = document.getElementById('fileInputRoteiro')?.files?.[0];
       if (!empresa) { alert('Selecione a empresa'); return; }
       if (!file) { alert('Selecione um arquivo'); return; }
-    } else {
+    } else if (mode === 'importkm') {
       const filial = form.querySelector('input[name="filial"]').value;
       const ano = form.querySelector('input[name="ano"]').value;
       const mes = form.querySelector('input[name="mes"]').value;
@@ -1228,27 +1275,41 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       if (!ano) { alert('Selecione o ano'); return; }
       if (!mes) { alert('Selecione o mês'); return; }
       if (!file) { alert('Selecione um arquivo'); return; }
+    } else if (mode === 'escala') {
+      const f1 = document.getElementById('fileInputEscalaPadronizado')?.files?.[0];
+      const f2 = document.getElementById('fileInputEscala')?.files?.[0];
+      if (!f1) { alert('Selecione o Arquivo Padronizado (XLSX)'); return; }
+      if (!f2) { alert('Selecione a Escala Padrão'); return; }
     }
 
     showLoading();
     const start = Date.now();
     let timer = null;
 
-    const steps = mode === 'importkm'
-      ? [
-          { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
-          { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
-          { pctTo: 72, step: 3, sub: 'Convertendo KM para padrão…' },
-          { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
-          { pctTo: 99, step: 5, sub: 'Finalizando…' },
-        ]
-      : [
-          { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
-          { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
-          { pctTo: 72, step: 3, sub: 'Convertendo para padrão…' },
-          { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
-          { pctTo: 99, step: 5, sub: 'Finalizando…' },
-        ];
+    const steps =
+      mode === 'importkm'
+        ? [
+            { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
+            { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
+            { pctTo: 72, step: 3, sub: 'Convertendo KM para padrão…' },
+            { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
+            { pctTo: 99, step: 5, sub: 'Finalizando…' },
+          ]
+        : mode === 'escala'
+          ? [
+              { pctTo: 18, step: 1, sub: 'Enviando arquivos…' },
+              { pctTo: 38, step: 2, sub: 'Validando estrutura…' },
+              { pctTo: 78, step: 3, sub: 'Aplicando escala padrão…' },
+              { pctTo: 92, step: 4, sub: 'Gerando XLSX final…' },
+              { pctTo: 99, step: 5, sub: 'Finalizando…' },
+            ]
+          : [
+              { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
+              { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
+              { pctTo: 72, step: 3, sub: 'Convertendo para padrão…' },
+              { pctTo: 90, step: 4, sub: 'Gerando XLSX final…' },
+              { pctTo: 99, step: 5, sub: 'Finalizando…' },
+            ];
 
     function msToHuman(ms) {
       const s = Math.max(0, Math.floor(ms / 1000));
@@ -1291,15 +1352,26 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       a.href = url;
       a.download = fileName;
 
-      const origem = mode === 'importkm'
-        ? (form.querySelector('input[name="filial"]').value || '—')
-        : (form.querySelector('input[name="empresa"]').value || '—');
+      const origem =
+        mode === 'importkm'
+          ? (form.querySelector('input[name="filial"]').value || '—')
+          : mode === 'roteiro'
+            ? (form.querySelector('input[name="empresa"]').value || '—')
+            : 'Escala Padrão';
 
-      $('resModulo').textContent = mode === 'importkm' ? 'Importação de KM' : 'Padronizador';
+      $('resModulo').textContent =
+        mode === 'importkm' ? 'Importação de KM' :
+        mode === 'escala'   ? 'Aplicar Escala Padrão' :
+                              'Padronizador';
+
       $('resOrigem').textContent = origem;
       $('resFileName').textContent = fileName;
       $('resStatus').textContent = 'Concluído';
-      $('resTitleTop').textContent = mode === 'importkm' ? 'Importação de KM' : 'Padronizador';
+
+      $('resTitleTop').textContent =
+        mode === 'importkm' ? 'Importação de KM' :
+        mode === 'escala'   ? 'Aplicar Escala Padrão' :
+                              'Padronizador';
 
       setProgress(100, 'Pronto!', 5);
       clearInterval(timer);
