@@ -1657,19 +1657,20 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       const match = disp.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
 
       let fileName = decodeURIComponent((match && (match[1] || match[2])) || '');
+  if (mode === 'pad_tarifa' || mode === 'info_rota') fileName = '';
 
       // fallback por modo
-      if (!fileName) {
-        if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.xlsx';
-        else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.xlsx';
-        else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
-      }
+    if (!fileName) {
+  if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.txt';
+  else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.txt';
+  else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
+}
 
-      // garante extensão xlsx nos padronizadores
-      if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.xlsx$/i.test(fileName)) {
-        fileName = fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA');
-        fileName += '.xlsx';
-      }
+// garante extensão TXT nesses dois
+if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)) {
+  fileName = (fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA')) + '.txt';
+}
+
 
       const url = URL.createObjectURL(blob);
       const a = $('btnDownload');
@@ -1725,4 +1726,5 @@ setTopActive('suporte');
 
 </body>
 </html>
+
 
