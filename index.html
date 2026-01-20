@@ -1090,7 +1090,9 @@ button:active, .btn:active { transform: scale(0.97); }
         <div class="nav-title">Ferramentas</div>
 
         <nav class="nav" aria-label="Navegação Diversos">
-          <button class="nav-btn active" type="button" data-tab="conversor">
+
+          <!-- 1) PADRONIZADOR TARIFA (ex-CONVERSOR) -->
+          <button class="nav-btn active" type="button" data-tab="padronizador_tarifa">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -1102,12 +1104,33 @@ button:active, .btn:active { transform: scale(0.97); }
                 </svg>
               </div>
               <div class="nav-label">
-                <b>CONVERSOR</b>
+                <b>PADRONIZADOR TARIFA</b>
                 <span>Envio único (XLSX) • retorno XLSX</span>
               </div>
             </div>
             <div class="nav-chip">XLSX</div>
           </button>
+
+          <!-- 2) PADRONIZADOR INFO-ROTA -->
+          <button class="nav-btn" type="button" data-tab="padronizador_info_rota">
+            <div class="nav-left">
+              <div class="nav-ico" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M5 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M5 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16 8h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M16 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="nav-label">
+                <b>PADRONIZADOR INFO-ROTA</b>
+                <span>Envio único (XLSX) • retorno XLSX</span>
+              </div>
+            </div>
+            <div class="nav-chip">XLSX</div>
+          </button>
+
         </nav>
 
         <div class="sidebar-footer">
@@ -1119,30 +1142,56 @@ button:active, .btn:active { transform: scale(0.97); }
       <!-- CONTENT -->
       <main class="content">
 
-        <!-- CONVERSOR -->
-        <div class="screen active" id="screenConversor">
-          <h1>CONVERSOR</h1>
-          <div class="subtitle">Envie um arquivo XLSX e receba o retorno convertido</div>
+        <!-- PADRONIZADOR TARIFA -->
+        <div class="screen active" id="screenPadronizadorTarifa">
+          <h1>PADRONIZADOR TARIFA</h1>
+          <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
 
           <form class="js-upload-form"
-            id="uploadFormConversor"
-            data-mode="conversor"
+            id="uploadFormPadTarifa"
+            data-mode="pad_tarifa"
             action="https://n8n.datastack.viagroup.com.br/webhook-test/CONVERSOR"
             method="post"
             enctype="multipart/form-data"
           >
-            <input type="hidden" name="modulo" value="CONVERSOR">
+            <input type="hidden" name="modulo" value="PADRONIZADOR_TARIFA">
 
             <div class="form-group upload-area">
               <label>Arquivo (XLSX)</label>
-              <input id="fileInputConversor" type="file" name="file" accept=".xlsx" required>
+              <input id="fileInputPadTarifa" type="file" name="file" accept=".xlsx" required>
               <span>Apenas XLSX</span>
             </div>
 
-            <button type="submit">Converter</button>
+            <button type="submit">Processar</button>
           </form>
 
-          <div class="footer">VIA Group • Conversões</div>
+          <div class="footer">VIA Group • Diversos</div>
+        </div>
+
+        <!-- PADRONIZADOR INFO-ROTA -->
+        <div class="screen" id="screenPadronizadorInfoRota">
+          <h1>PADRONIZADOR INFO-ROTA</h1>
+          <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
+
+          <form class="js-upload-form"
+            id="uploadFormInfoRota"
+            data-mode="info_rota"
+            action="https://n8n.datastack.viagroup.com.br/webhook/INFO-ROTA"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <input type="hidden" name="modulo" value="PADRONIZADOR_INFO_ROTA">
+
+            <div class="form-group upload-area">
+              <label>Arquivo (XLSX)</label>
+              <input id="fileInputInfoRota" type="file" name="file" accept=".xlsx" required>
+              <span>Apenas XLSX</span>
+            </div>
+
+            <button type="submit">Processar</button>
+          </form>
+
+          <div class="footer">VIA Group • Diversos</div>
         </div>
 
       </main>
@@ -1334,7 +1383,7 @@ const topTabs = document.querySelectorAll('.top-tab');
 let currentTop = 'suporte'; // suporte | diversos
 
 let currentSupportTab = 'padronizador';
-let currentDiversosTab = 'conversor';
+let currentDiversosTab = 'padronizador_tarifa';
 
 function setTopActive(topName){
   currentTop = topName;
@@ -1390,7 +1439,8 @@ function setActiveTabDiversos(tabName){
 
   tabsDiversos.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
-  document.getElementById('screenConversor').classList.toggle('active', tabName === 'conversor');
+  document.getElementById('screenPadronizadorTarifa').classList.toggle('active', tabName === 'padronizador_tarifa');
+  document.getElementById('screenPadronizadorInfoRota').classList.toggle('active', tabName === 'padronizador_info_rota');
 }
 
 tabsDiversos.forEach(btn => {
@@ -1418,7 +1468,8 @@ function setLoadingMode(mode){
   if (mode === 'importkm')  title = 'Processando Importação de KM';
   if (mode === 'roteiro')   title = 'Processando roteirização';
   if (mode === 'escala')    title = 'Aplicando Escala Padrão';
-  if (mode === 'conversor') title = 'Processando CONVERSOR';
+  if (mode === 'pad_tarifa') title = 'Processando PADRONIZADOR TARIFA';
+  if (mode === 'info_rota') title = 'Processando PADRONIZADOR INFO-ROTA';
   $('loadingTitle').textContent = title;
 
   const steps = $('stepList').querySelectorAll('.step');
@@ -1427,8 +1478,8 @@ function setLoadingMode(mode){
       ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo KM para padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
       : mode === 'escala'
         ? ['Enviando arquivos', 'Validando estrutura', 'Aplicando escala padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
-        : mode === 'conversor'
-          ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo', 'Gerando XLSX final', 'Finalizando e preparando download']
+        : (mode === 'pad_tarifa' || mode === 'info_rota')
+          ? ['Enviando arquivo', 'Validando estrutura', 'Padronizando', 'Gerando XLSX final', 'Finalizando e preparando download']
           : ['Enviando arquivo', 'Validando estrutura', 'Convertendo para padrão', 'Gerando XLSX final', 'Finalizando e preparando download'];
 
   steps.forEach((el, idx) => {
@@ -1520,10 +1571,17 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       if (!f2) { alert('Selecione a Escala Padrão'); return; }
       currentTop = 'suporte';
 
-    } else if (mode === 'conversor') {
-      const f = document.getElementById('fileInputConversor')?.files?.[0];
+    } else if (mode === 'pad_tarifa') {
+      const f = document.getElementById('fileInputPadTarifa')?.files?.[0];
       if (!f) { alert('Selecione um XLSX'); return; }
       currentTop = 'diversos';
+      currentDiversosTab = 'padronizador_tarifa';
+
+    } else if (mode === 'info_rota') {
+      const f = document.getElementById('fileInputInfoRota')?.files?.[0];
+      if (!f) { alert('Selecione um XLSX'); return; }
+      currentTop = 'diversos';
+      currentDiversosTab = 'padronizador_info_rota';
     }
 
     showLoading();
@@ -1547,11 +1605,11 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
               { pctTo: 92, step: 4, sub: 'Gerando XLSX final…' },
               { pctTo: 99, step: 5, sub: 'Finalizando…' },
             ]
-          : mode === 'conversor'
+          : (mode === 'pad_tarifa' || mode === 'info_rota')
             ? [
                 { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
                 { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
-                { pctTo: 74, step: 3, sub: 'Convertendo…' },
+                { pctTo: 74, step: 3, sub: 'Padronizando…' },
                 { pctTo: 92, step: 4, sub: 'Gerando XLSX final…' },
                 { pctTo: 99, step: 5, sub: 'Finalizando…' },
               ]
@@ -1595,23 +1653,23 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
 
       const blob = await res.blob();
 
-    const disp = res.headers.get('content-disposition') || '';
-const match = disp.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
+      const disp = res.headers.get('content-disposition') || '';
+      const match = disp.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
 
-let fileName = decodeURIComponent((match && (match[1] || match[2])) || '');
+      let fileName = decodeURIComponent((match && (match[1] || match[2])) || '');
 
-// fallback por modo (aqui entra o seu caso)
-if (!fileName) {
-  if (mode === 'conversor') fileName = 'CONVERSOR.txt';
-  else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
-}
+      // fallback por modo
+      if (!fileName) {
+        if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.xlsx';
+        else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.xlsx';
+        else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
+      }
 
-// garantia extra: se for conversor e não vier .txt, força .txt
-if (mode === 'conversor' && !/\.txt$/i.test(fileName)) {
-  fileName = fileName.replace(/\.[^.]+$/i, '') || 'CONVERSOR';
-  fileName += '.txt';
-}
-
+      // garante extensão xlsx nos padronizadores
+      if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.xlsx$/i.test(fileName)) {
+        fileName = fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA');
+        fileName += '.xlsx';
+      }
 
       const url = URL.createObjectURL(blob);
       const a = $('btnDownload');
@@ -1626,12 +1684,13 @@ if (mode === 'conversor' && !/\.txt$/i.test(fileName)) {
             ? (form.querySelector('input[name="empresa"]')?.value || '—')
             : mode === 'escala'
               ? 'Escala Padrão'
-              : 'CONVERSOR';
+              : (mode === 'pad_tarifa' ? 'Padronizador Tarifa' : 'Padronizador Info-Rota');
 
       $('resModulo').textContent =
         mode === 'importkm'  ? 'Importação de KM' :
         mode === 'escala'    ? 'Aplicar Escala Padrão' :
-        mode === 'conversor' ? 'CONVERSOR' :
+        mode === 'pad_tarifa' ? 'PADRONIZADOR TARIFA' :
+        mode === 'info_rota' ? 'PADRONIZADOR INFO-ROTA' :
                                'Padronizador';
 
       $('resOrigem').textContent = origem;
@@ -1641,7 +1700,8 @@ if (mode === 'conversor' && !/\.txt$/i.test(fileName)) {
       $('resTitleTop').textContent =
         mode === 'importkm'  ? 'Importação de KM' :
         mode === 'escala'    ? 'Aplicar Escala Padrão' :
-        mode === 'conversor' ? 'CONVERSOR' :
+        mode === 'pad_tarifa' ? 'PADRONIZADOR TARIFA' :
+        mode === 'info_rota' ? 'PADRONIZADOR INFO-ROTA' :
                                'Padronizador';
 
       setProgress(100, 'Pronto!', 5);
