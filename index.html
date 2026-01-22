@@ -5,15 +5,16 @@
 <title>Roteirizador | VIA Group</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- cor da aba (mobile) -->
 <meta name="theme-color" content="#0f4fa8">
 
-<!-- ÍCONE DA ABA (funciona no GitHub Pages sem precisar subir arquivo) -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%230f4fa8'/%3E%3Cstop offset='1' stop-color='%232fa4ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M16 18l16 32 16-32' fill='none' stroke='%23fff' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* =========================================================
+   [BLOCO: CORES + BASE]
+   ========================================================= */
 .pill.offline {
   background: #ffecec !important;
   color: #9b1c1c !important;
@@ -49,7 +50,9 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== APP LAYOUT ===== */
+/* =========================================================
+   [BLOCO: CONTAINER]
+   ========================================================= */
 .container {
   width: 100%;
   max-width: 980px;
@@ -67,7 +70,10 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== TOP TABS (SUPORTE / DIVERSOS) ===== */
+/* =========================================================
+   [BLOCO: TOP TABS — Suporte/Diversos/Placas]
+   (alterações futuras dessa área: mexer só aqui)
+   ========================================================= */
 .top-tabs {
   display: flex;
   gap: 10px;
@@ -98,21 +104,18 @@ body {
   letter-spacing: .2px;
 }
 
+.top-tab svg{
+  width: 18px;
+  height: 18px;
+  color: rgba(11,28,61,0.75);
+}
+
 .top-tab:hover{
   transform: translateY(-2px);
   border-color: rgba(47,164,255,0.42);
   box-shadow: 0 22px 65px rgba(15,79,168,0.14);
 }
-
 .top-tab:active{ transform: scale(0.98); }
-
-.top-tab .mini {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(15,79,168,0.20);
-  border: 1px solid rgba(15,79,168,0.18);
-}
 
 .top-tab.active{
   color: var(--azul-escuro);
@@ -120,24 +123,20 @@ body {
   border-color: rgba(15,79,168,0.25);
   box-shadow: 0 26px 80px rgba(15,79,168,0.16);
 }
-.top-tab.active .mini{
-  background: var(--azul);
-  border-color: rgba(47,164,255,0.45);
-  box-shadow: 0 0 0 0 rgba(47,164,255,0.55);
-  animation: pulse 1.2s infinite;
-}
+.top-tab.active svg{ color: var(--azul); }
 
 /* container interno dos apps */
 .app-wrap { width: 100%; }
 
-/* ===== GRID app ===== */
+/* =========================================================
+   [BLOCO: GRID / SIDEBAR / CONTENT]
+   ========================================================= */
 .app {
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 640px;
 }
 
-/* ===== SIDEBAR ===== */
 .sidebar {
   position: relative;
   padding: 20px 16px;
@@ -147,7 +146,6 @@ body {
     linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.60));
   backdrop-filter: blur(18px);
 }
-
 .sidebar::after{
   content:"";
   position:absolute;
@@ -165,14 +163,7 @@ body {
   padding: 8px 10px 16px;
   border-radius: 18px;
 }
-
-.brand .logo {
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap: 10px;
-}
-
+.brand .logo { display:flex; align-items:center; justify-content:flex-start; gap: 10px; }
 .brand .logo img { width: 156px; }
 
 .brand .meta {
@@ -186,13 +177,11 @@ body {
   border: 1px solid rgba(15,79,168,0.10);
   box-shadow: 0 18px 45px rgba(0,0,0,0.06);
 }
-
 .brand .meta b{
   font-size: 12px;
   color: var(--azul-escuro);
   letter-spacing: 0.2px;
 }
-
 .brand .pill{
   display:inline-flex;
   align-items:center;
@@ -205,7 +194,6 @@ body {
   font-size: 12px;
   font-weight: 800;
 }
-
 .pulse-mini {
   width: 8px;
   height: 8px;
@@ -215,7 +203,6 @@ body {
   animation: pulse 1.2s infinite;
   flex: 0 0 auto;
 }
-
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(47,164,255,0.55); transform: scale(0.95); }
   70% { box-shadow: 0 0 0 12px rgba(47,164,255,0); transform: scale(1); }
@@ -228,7 +215,6 @@ body {
   gap: 10px;
   padding: 0 6px;
 }
-
 .nav-title {
   margin: 10px 8px 6px;
   font-size: 11px;
@@ -237,7 +223,6 @@ body {
   color: rgba(11,28,61,0.62);
   text-transform: uppercase;
 }
-
 .nav-btn{
   width: 100%;
   border: 0;
@@ -256,7 +241,6 @@ body {
   position: relative;
   overflow: hidden;
 }
-
 .nav-btn::before{
   content:"";
   position:absolute;
@@ -266,24 +250,15 @@ body {
   transition: opacity .35s ease;
   pointer-events:none;
 }
-
 .nav-btn:hover{
   transform: translateY(-2px);
   border-color: rgba(47,164,255,0.42);
   box-shadow: 0 22px 65px rgba(15,79,168,0.14);
 }
-
 .nav-btn:hover::before{ opacity: 1; }
-
 .nav-btn:active{ transform: scale(0.98); }
 
-.nav-left{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  min-width: 0;
-}
-
+.nav-left{ display:flex; align-items:center; gap: 10px; min-width: 0; }
 .nav-ico{
   width: 38px;
   height: 38px;
@@ -295,19 +270,13 @@ body {
   color: var(--azul);
   transition: all .35s ease;
 }
-
 .nav-btn:hover .nav-ico{
   transform: rotate(-2deg) scale(1.04);
   border-color: rgba(47,164,255,0.5);
   box-shadow: 0 14px 35px rgba(47,164,255,0.18);
 }
 
-.nav-label{
-  display:grid;
-  gap: 3px;
-  min-width: 0;
-}
-
+.nav-label{ display:grid; gap: 3px; min-width: 0; }
 .nav-label b{
   font-size: 13px;
   font-weight: 900;
@@ -316,7 +285,6 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .nav-label span{
   font-size: 11.5px;
   color: rgba(75,93,130,0.85);
@@ -340,7 +308,6 @@ body {
   border-color: rgba(15,79,168,0.25);
   box-shadow: 0 26px 80px rgba(15,79,168,0.16);
 }
-
 .nav-btn.active .nav-chip{
   color: var(--azul);
   border-color: rgba(47,164,255,0.35);
@@ -358,12 +325,7 @@ body {
   box-shadow: 0 16px 44px rgba(0,0,0,0.06);
 }
 
-/* ===== CONTENT ===== */
-.content {
-  padding: 34px 34px 28px;
-  position: relative;
-}
-
+.content { padding: 34px 34px 28px; position: relative; }
 h1 {
   text-align: center;
   color: var(--azul-escuro);
@@ -371,16 +333,13 @@ h1 {
   font-weight: 700;
   margin: 0 0 6px;
 }
-
 .subtitle {
   text-align: center;
   color: #5b6b8b;
   font-size: 14px;
   margin-bottom: 26px;
 }
-
 .form-group { margin-bottom: 22px; }
-
 label {
   font-size: 13px;
   font-weight: 600;
@@ -389,10 +348,10 @@ label {
   display: block;
 }
 
-/* ===== SELECT CUSTOM ===== */
+/* =========================================================
+   [BLOCO: SELECT CUSTOM]
+   ========================================================= */
 .custom-select { position: relative; width: 100%; z-index: 1; }
-
-/* garante que o dropdown fique acima de qualquer item/section */
 .custom-select.open-wrap { z-index: 10000; }
 
 .select-selected {
@@ -405,14 +364,11 @@ label {
   transition: all 0.35s ease;
   user-select: none;
 }
-
 .select-selected:hover { border-color: var(--azul-claro); }
-
 .select-selected.active {
   border-color: var(--azul);
   box-shadow: 0 0 0 4px rgba(47,164,255,0.25);
 }
-
 .select-items {
   position: absolute;
   top: calc(100% + 10px);
@@ -428,27 +384,24 @@ label {
   transition: all 0.35s ease;
   z-index: 9999;
 }
-
 .select-items.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
-
 .select-items div {
   padding: 15px 18px;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.25s ease;
 }
-
 .select-items div:hover {
   background: linear-gradient(135deg, var(--azul), var(--azul-claro));
   color: white;
   transform: scale(1.015);
 }
 
-/* ===== MÊS: SCROLL ===== */
+/* MÊS: SCROLL */
 #monthOptions{
   max-height: 280px;
   overflow-y: auto;
@@ -456,8 +409,6 @@ label {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
-
-/* Chrome/Edge */
 #monthOptions::-webkit-scrollbar { width: 8px; }
 #monthOptions::-webkit-scrollbar-track { background: rgba(11,28,61,0.06); }
 #monthOptions::-webkit-scrollbar-thumb {
@@ -465,25 +416,13 @@ label {
   border-radius: 999px;
 }
 #monthOptions::-webkit-scrollbar-thumb:hover { background: rgba(15,79,168,0.34); }
+#monthOptions{ scrollbar-width: thin; scrollbar-color: rgba(15,79,168,0.28) rgba(11,28,61,0.06); }
 
-/* Firefox */
-#monthOptions{
-  scrollbar-width: thin;
-  scrollbar-color: rgba(15,79,168,0.28) rgba(11,28,61,0.06);
-}
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 760px){ .grid-2 { grid-template-columns: 1fr; } }
 
-/* ===== GRID ===== */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-@media (max-width: 760px){
-  .grid-2 { grid-template-columns: 1fr; }
-}
-
-/* ===== UPLOAD ===== */
+/* UPLOAD */
 .upload-area {
   border: 2px dashed #cfd9ea;
   border-radius: 18px;
@@ -492,22 +431,11 @@ label {
   background: #fdfefe;
   transition: all 0.35s ease;
 }
-
-.upload-area:hover {
-  border-color: var(--azul);
-  background: #f3f8ff;
-}
-
+.upload-area:hover { border-color: var(--azul); background: #f3f8ff; }
 .upload-area input { margin-top: 8px; }
+.upload-area span { display: block; font-size: 13px; color: #6c7a99; margin-top: 8px; }
 
-.upload-area span {
-  display: block;
-  font-size: 13px;
-  color: #6c7a99;
-  margin-top: 8px;
-}
-
-/* ===== BOTÕES ===== */
+/* BOTÕES */
 button, .btn {
   width: 100%;
   padding: 17px;
@@ -526,65 +454,35 @@ button, .btn {
   gap: 10px;
   text-decoration: none;
 }
-
 button:hover, .btn:hover {
   transform: translateY(-2px) scale(1.015);
   box-shadow: 0 26px 55px rgba(15,79,168,0.5);
 }
-
 button:active, .btn:active { transform: scale(0.97); }
-
 .btn.secondary {
   background: #fff;
   color: var(--azul-escuro);
   border: 1px solid #d9e2ef;
   box-shadow: 0 16px 40px rgba(0,0,0,0.08);
 }
-
 .btn.secondary:hover {
   border-color: var(--azul-claro);
   box-shadow: 0 22px 55px rgba(0,0,0,0.12);
 }
+.footer { margin-top: 18px; text-align: center; font-size: 12px; color: #7b8aad; }
 
-.footer {
-  margin-top: 18px;
-  text-align: center;
-  font-size: 12px;
-  color: #7b8aad;
-}
-
-/* ===== TELAS ===== */
+/* TELAS */
 .screen { display: none; }
-
-.screen.active {
-  display: block;
-  animation: screenIn 360ms ease-out;
-}
-
+.screen.active { display: block; animation: screenIn 360ms ease-out; }
 @keyframes screenIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@media (prefers-reduced-motion: reduce) { .screen.active { animation: none; } }
 
-@media (prefers-reduced-motion: reduce) {
-  .screen.active { animation: none; }
-}
-
-.result-title {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--azul-escuro);
-  margin: 6px 0 8px;
-}
-
-.result-sub {
-  text-align: center;
-  font-size: 13px;
-  color: #5b6b8b;
-  margin: 0 0 22px;
-}
-
+/* RESULT */
+.result-title { text-align: center; font-size: 18px; font-weight: 700; color: var(--azul-escuro); margin: 6px 0 8px; }
+.result-sub { text-align: center; font-size: 13px; color: #5b6b8b; margin: 0 0 22px; }
 .result-box {
   background: var(--glass-strong);
   border: 1px solid #d9e2ef;
@@ -593,25 +491,11 @@ button:active, .btn:active { transform: scale(0.97); }
   margin-bottom: 18px;
   box-shadow: 0 18px 50px rgba(0,0,0,0.08);
 }
-
-.kv {
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 8px 10px;
-  font-size: 13px;
-  color: #4b5d82;
-}
-
+.kv { display: grid; grid-template-columns: 130px 1fr; gap: 8px 10px; font-size: 13px; color: #4b5d82; }
 .kv b { color: var(--azul-escuro); font-weight: 700; }
+.actions { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 8px; }
 
-.actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-/* ===== LOADING OVERLAY ===== */
+/* LOADING OVERLAY */
 .loading-overlay {
   position: fixed;
   inset: 0;
@@ -622,9 +506,7 @@ button:active, .btn:active { transform: scale(0.97); }
   z-index: 999999;
   padding: 18px;
 }
-
 .loading-overlay.show { display: flex; }
-
 .loading-card {
   width: min(560px, 92vw);
   background: var(--glass-strong);
@@ -635,145 +517,32 @@ button:active, .btn:active { transform: scale(0.97); }
   backdrop-filter: blur(18px);
   animation: pop 0.35s ease;
 }
-
-@keyframes pop {
-  from { transform: translateY(10px) scale(0.98); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
-}
-
-.loading-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.loading-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--azul-escuro);
-}
-
-.loading-sub {
-  margin-top: 3px;
-  font-size: 12px;
-  color: #5b6b8b;
-}
-
+@keyframes pop { from { transform: translateY(10px) scale(0.98); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.loading-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
+.loading-title { font-size: 14px; font-weight: 800; color: var(--azul-escuro); }
+.loading-sub { margin-top: 3px; font-size: 12px; color: #5b6b8b; }
 .pulse-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 10px; height: 10px; border-radius: 50%;
   background: var(--azul);
   box-shadow: 0 0 0 0 rgba(47,164,255,0.6);
   animation: pulse 1.2s infinite;
   flex: 0 0 auto;
 }
-
-.progress-wrap {
-  margin-top: 12px;
-  background: rgba(11,28,61,0.06);
-  border: 1px solid rgba(11,28,61,0.08);
-  border-radius: 16px;
-  padding: 10px;
-}
-
-.progress-bar {
-  height: 14px;
-  border-radius: 12px;
-  background: linear-gradient(90deg, rgba(47,164,255,0.15), rgba(15,79,168,0.25));
-  overflow: hidden;
-  position: relative;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0%;
-  border-radius: 12px;
-  background: linear-gradient(90deg, var(--azul), var(--azul-claro));
-  transition: width 0.25s ease;
-  position: relative;
-}
-
-.progress-shine {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 45%, transparent 70%);
-  transform: translateX(-100%);
-  animation: shine 1.2s linear infinite;
-  opacity: 0.9;
-  pointer-events: none;
-}
-
+.progress-wrap { margin-top: 12px; background: rgba(11,28,61,0.06); border: 1px solid rgba(11,28,61,0.08); border-radius: 16px; padding: 10px; }
+.progress-bar { height: 14px; border-radius: 12px; background: linear-gradient(90deg, rgba(47,164,255,0.15), rgba(15,79,168,0.25)); overflow: hidden; position: relative; }
+.progress-fill { height: 100%; width: 0%; border-radius: 12px; background: linear-gradient(90deg, var(--azul), var(--azul-claro)); transition: width 0.25s ease; position: relative; }
+.progress-shine { position: absolute; inset: 0; background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.55) 45%, transparent 70%); transform: translateX(-100%); animation: shine 1.2s linear infinite; opacity: 0.9; pointer-events: none; }
 @keyframes shine { to { transform: translateX(120%); } }
+.progress-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: #5b6b8b; }
+.step-list { margin-top: 14px; display: grid; gap: 8px; }
+.step { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.8); border: 1px solid rgba(15,79,168,0.08); font-size: 12px; color: #4b5d82; }
+.step .badge { width: 18px; height: 18px; border-radius: 50%; background: rgba(15,79,168,0.12); display: grid; place-items: center; font-weight: 800; color: var(--azul); }
+.step.active { border-color: rgba(47,164,255,0.35); box-shadow: 0 18px 40px rgba(47,164,255,0.12); }
+.step.done .badge { background: rgba(47,164,255,0.18); color: var(--azul-escuro); }
+.error-box { margin-top: 12px; background: #fff5f5; border: 1px solid #ffd1d1; color: #9b1c1c; border-radius: 16px; padding: 12px 14px; font-size: 13px; }
+.small { font-size: 12px; color: #6c7a99; margin-top: 10px; text-align: center; }
 
-.progress-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  font-size: 12px;
-  color: #5b6b8b;
-}
-
-.step-list {
-  margin-top: 14px;
-  display: grid;
-  gap: 8px;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.8);
-  border: 1px solid rgba(15,79,168,0.08);
-  font-size: 12px;
-  color: #4b5d82;
-}
-
-.step .badge {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(15,79,168,0.12);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: var(--azul);
-}
-
-.step.active {
-  border-color: rgba(47,164,255,0.35);
-  box-shadow: 0 18px 40px rgba(47,164,255,0.12);
-}
-
-.step.done .badge {
-  background: rgba(47,164,255,0.18);
-  color: var(--azul-escuro);
-}
-
-.error-box {
-  margin-top: 12px;
-  background: #fff5f5;
-  border: 1px solid #ffd1d1;
-  color: #9b1c1c;
-  border-radius: 16px;
-  padding: 12px 14px;
-  font-size: 13px;
-}
-
-.small {
-  font-size: 12px;
-  color: #6c7a99;
-  margin-top: 10px;
-  text-align: center;
-}
-
-/* ===== RESPONSIVO ===== */
+/* RESPONSIVO */
 @media (max-width: 920px){
   .container{ max-width: 92vw; }
   .app{ grid-template-columns: 220px 1fr; }
@@ -834,19 +603,36 @@ button:active, .btn:active { transform: scale(0.97); }
   <!-- TOP TABS -->
   <div class="top-tabs" role="tablist" aria-label="Abas principais">
     <button class="top-tab active" id="topSuporte" type="button" data-top="suporte" role="tab" aria-selected="true">
-      <span class="mini" aria-hidden="true"></span>
+      <!-- Ícone: Chave inglesa -->
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21 7.5a5.5 5.5 0 0 1-7.8 5l-7.2 7.2a2 2 0 0 1-2.8-2.8l7.2-7.2A5.5 5.5 0 1 1 21 7.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       Suporte
     </button>
+
     <button class="top-tab" id="topDiversos" type="button" data-top="diversos" role="tab" aria-selected="false">
-      <span class="mini" aria-hidden="true"></span>
+      <!-- Ícone: Grade / Apps -->
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
       Diversos
+    </button>
+
+    <button class="top-tab" id="topPlacas" type="button" data-top="placas" role="tab" aria-selected="false">
+      <!-- Ícone: Veículo -->
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 16V9a2 2 0 0 1 2-2h10a2 2 0 0 1 1.7.95L20 12v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M7 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" stroke="currentColor" stroke-width="2"/>
+        <path d="M3 16h4m10 0h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Placas/Indicadores
     </button>
   </div>
 
   <div class="app-wrap">
 
     <!-- =========================
-         APP: SUPORTE (tudo atual)
+         APP: SUPORTE
          ========================= -->
     <div class="app" id="appSuporte">
 
@@ -857,7 +643,7 @@ button:active, .btn:active { transform: scale(0.97); }
             <img src="https://viagroup.com.br/assets/via_group-22fac685.png" alt="VIA Group">
           </div>
           <div class="meta">
-            <b>Fluxo N8N</b>
+            <b>Fluxo n8n</b>
             <div class="pill"><span class="pulse-mini"></span>online</div>
           </div>
         </div>
@@ -865,7 +651,6 @@ button:active, .btn:active { transform: scale(0.97); }
         <div class="nav-title">Módulos</div>
 
         <nav class="nav" aria-label="Navegação Suporte">
-          <!-- 1) PADRONIZADOR -->
           <button class="nav-btn active" type="button" data-tab="padronizador">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
@@ -876,13 +661,12 @@ button:active, .btn:active { transform: scale(0.97); }
               </div>
               <div class="nav-label">
                 <b>Padronizador</b>
-                <span>CCPR • PIRACANJUBA • NESTLÉ</span>
+                <span>CCPR • Piracanjuba • Nestlé</span>
               </div>
             </div>
             <div class="nav-chip">ROT</div>
           </button>
 
-          <!-- 2) ESCALA PADRÃO -->
           <button class="nav-btn" type="button" data-tab="escala">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
@@ -901,7 +685,6 @@ button:active, .btn:active { transform: scale(0.97); }
             <div class="nav-chip">ESC</div>
           </button>
 
-          <!-- 3) IMPORTAÇÃO DE KM -->
           <button class="nav-btn" type="button" data-tab="importkm">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
@@ -914,7 +697,7 @@ button:active, .btn:active { transform: scale(0.97); }
               </div>
               <div class="nav-label">
                 <b>Importação de KM</b>
-                <span>ITALAC • ITA-PF • ITA-CS • ITA-TP</span>
+                <span>Italac • Ita-PF • Ita-CS • Ita-TP</span>
               </div>
             </div>
             <div class="nav-chip">KM</div>
@@ -930,7 +713,7 @@ button:active, .btn:active { transform: scale(0.97); }
       <!-- CONTENT -->
       <main class="content">
 
-        <!-- 1) PADRONIZADOR -->
+        <!-- Padronizador -->
         <div class="screen active" id="screenPadronizador">
           <h1>Padronizador</h1>
           <div class="subtitle">Envio inteligente de arquivos para padronização de rotas</div>
@@ -949,11 +732,11 @@ button:active, .btn:active { transform: scale(0.97); }
                 <div class="select-selected">Selecione a empresa</div>
                 <div class="select-items">
                   <div data-value="CCPR">CCPR</div>
-                  <div data-value="PIRACANJUBA">PIRACANJUBA</div>
-                  <div data-value="NESTLE">NESTLÉ</div>
-                  <div data-value="DANONE">DANONE</div>
-                  <div data-value="LAT-PASSOS">LAT-PASSOS</div>
-                  <div data-value="CATUPIRY">CATUPIRY (STV)</div>
+                  <div data-value="PIRACANJUBA">Piracanjuba</div>
+                  <div data-value="NESTLE">Nestlé</div>
+                  <div data-value="DANONE">Danone</div>
+                  <div data-value="LAT-PASSOS">Lat-Passos</div>
+                  <div data-value="CATUPIRY">Catupiry (STV)</div>
                 </div>
               </div>
 
@@ -969,10 +752,10 @@ button:active, .btn:active { transform: scale(0.97); }
             <button type="submit">Enviar para Processamento</button>
           </form>
 
-          <div class="footer">VIA Group • Automação & Roteirização Inteligente</div>
+          <div class="footer">VIA Group • Automação & Roteirização</div>
         </div>
 
-        <!-- 2) ESCALA PADRÃO -->
+        <!-- Escala -->
         <div class="screen" id="screenEscala">
           <h1>Aplicar Escala Padrão</h1>
           <div class="subtitle">Envie o XLSX padronizado + a Escala Padrão e aplique em um único clique</div>
@@ -1001,10 +784,10 @@ button:active, .btn:active { transform: scale(0.97); }
             <button type="submit">Aplicar Escala</button>
           </form>
 
-          <div class="footer">VIA Group • Teste de Escala</div>
+          <div class="footer">VIA Group • Escala</div>
         </div>
 
-        <!-- 3) IMPORTAÇÃO DE KM -->
+        <!-- Import KM -->
         <div class="screen" id="screenImportKm">
           <h1>Importação de KM</h1>
           <div class="subtitle">Converta importações de KM das filiais ITALAC para o padrão final</div>
@@ -1066,23 +849,24 @@ button:active, .btn:active { transform: scale(0.97); }
             <button type="submit">Converter Importação de KM</button>
           </form>
 
-          <div class="footer">VIA Group • Módulo ITALAC</div>
+          <div class="footer">VIA Group • ITALAC</div>
         </div>
 
       </main>
     </div>
 
-    <!-- ------------------- DIVERSOS -------------- -->
+    <!-- =========================
+         APP: DIVERSOS
+         ========================= -->
     <div class="app" id="appDiversos" style="display:none;">
 
-      <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="brand">
           <div class="logo">
             <img src="https://viagroup.com.br/assets/via_group-22fac685.png" alt="VIA Group">
           </div>
           <div class="meta">
-            <b>Fluxo N8N</b>
+            <b>Fluxo n8n</b>
             <div class="pill"><span class="pulse-mini"></span>online</div>
           </div>
         </div>
@@ -1091,7 +875,6 @@ button:active, .btn:active { transform: scale(0.97); }
 
         <nav class="nav" aria-label="Navegação Diversos">
 
-          <!-- 1) PADRONIZADOR TARIFA (ex-CONVERSOR) -->
           <button class="nav-btn active" type="button" data-tab="padronizador_tarifa">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
@@ -1104,14 +887,13 @@ button:active, .btn:active { transform: scale(0.97); }
                 </svg>
               </div>
               <div class="nav-label">
-                <b>PADRONIZADOR TARIFA</b>
+                <b>Padronizador Tarifa</b>
                 <span>Envio único (XLSX) • retorno XLSX</span>
               </div>
             </div>
             <div class="nav-chip">XLSX</div>
           </button>
 
-          <!-- 2) PADRONIZADOR INFO-ROTA -->
           <button class="nav-btn" type="button" data-tab="padronizador_info_rota">
             <div class="nav-left">
               <div class="nav-ico" aria-hidden="true">
@@ -1124,7 +906,7 @@ button:active, .btn:active { transform: scale(0.97); }
                 </svg>
               </div>
               <div class="nav-label">
-                <b>PADRONIZADOR INFO-ROTA</b>
+                <b>Padronizador Info-Rota</b>
                 <span>Envio único (XLSX) • retorno XLSX</span>
               </div>
             </div>
@@ -1139,12 +921,10 @@ button:active, .btn:active { transform: scale(0.97); }
         </div>
       </aside>
 
-      <!-- CONTENT -->
       <main class="content">
 
-        <!-- PADRONIZADOR TARIFA -->
         <div class="screen active" id="screenPadronizadorTarifa">
-          <h1>PADRONIZADOR TARIFA</h1>
+          <h1>Padronizador Tarifa</h1>
           <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
 
           <form class="js-upload-form"
@@ -1168,9 +948,8 @@ button:active, .btn:active { transform: scale(0.97); }
           <div class="footer">VIA Group • Diversos</div>
         </div>
 
-        <!-- PADRONIZADOR INFO-ROTA -->
         <div class="screen" id="screenPadronizadorInfoRota">
-          <h1>PADRONIZADOR INFO-ROTA</h1>
+          <h1>Padronizador Info-Rota</h1>
           <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
 
           <form class="js-upload-form"
@@ -1230,9 +1009,9 @@ button:active, .btn:active { transform: scale(0.97); }
 </div>
 
 <script>
-/* =========================
-   ONLINE / OFFLINE PILL (ambos sidebars)
-   ========================= */
+/* =========================================================
+   [BLOCO: ONLINE/OFFLINE — pill (não mexe no resto)
+   ========================================================= */
 async function checkN8nStatus() {
   const pills = document.querySelectorAll('.brand .pill');
   if (!pills.length) return;
@@ -1274,11 +1053,12 @@ async function checkN8nStatus() {
     });
   }
 }
-
 checkN8nStatus();
 setInterval(checkN8nStatus, 60000);
 
-/* ===== SELECT CUSTOM (multi) ===== */
+/* =========================================================
+   [BLOCO: SELECT CUSTOM]
+   ========================================================= */
 function closeAllSelects(exceptSelect=null){
   document.querySelectorAll('.custom-select').forEach(s => {
     if (exceptSelect && s === exceptSelect) return;
@@ -1289,7 +1069,6 @@ function closeAllSelects(exceptSelect=null){
     if (se) se.classList.remove('active');
   });
 }
-
 function initCustomSelects(root=document){
   root.querySelectorAll('.custom-select').forEach(select => {
     if (select.dataset.inited === '1') return;
@@ -1303,7 +1082,6 @@ function initCustomSelects(root=document){
 
     selected.addEventListener('click', (ev) => {
       ev.stopPropagation();
-
       const willOpen = !items.classList.contains('open');
       closeAllSelects(select);
 
@@ -1321,10 +1099,8 @@ function initCustomSelects(root=document){
     items.querySelectorAll('div').forEach(option => {
       option.addEventListener('click', (ev) => {
         ev.stopPropagation();
-
         selected.textContent = option.textContent;
         if (hiddenInput) hiddenInput.value = option.dataset.value ?? option.textContent;
-
         items.classList.remove('open');
         selected.classList.remove('active');
         select.classList.remove('open-wrap');
@@ -1332,10 +1108,11 @@ function initCustomSelects(root=document){
     });
   });
 }
-
 document.addEventListener('click', () => closeAllSelects());
 
-/* ===== ANO (default atual) ===== */
+/* =========================================================
+   [BLOCO: ANO/MÊS]
+   ========================================================= */
 (function initYearPicker(){
   const currentYear = new Date().getFullYear();
   const yearStart = currentYear - 3;
@@ -1360,8 +1137,6 @@ document.addEventListener('click', () => closeAllSelects());
 
   initCustomSelects(document.getElementById('screenImportKm'));
 })();
-
-/* ===== MÊS hidden input binding ===== */
 (function bindMonthHidden(){
   const monthSelect = document.getElementById('monthOptions');
   const mesInput = document.getElementById('mesInput');
@@ -1373,12 +1148,11 @@ document.addEventListener('click', () => closeAllSelects());
     });
   });
 })();
-
 initCustomSelects();
 
-/* =========================
-   TOP TABS (SUPORTE / DIVERSOS)
-   ========================= */
+/* =========================================================
+   [BLOCO: TOP TABS + roteamento para placas_indicadores.html]
+   ========================================================= */
 const topTabs = document.querySelectorAll('.top-tab');
 let currentTop = 'suporte'; // suporte | diversos
 
@@ -1394,28 +1168,29 @@ function setTopActive(topName){
     b.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 
-  // mostrar app correto e garantir que o RESULT não fique ativo
   document.getElementById('appResult').style.display = 'none';
   document.getElementById('appSuporte').style.display = (topName === 'suporte') ? '' : 'none';
   document.getElementById('appDiversos').style.display = (topName === 'diversos') ? '' : 'none';
 
-  if (topName === 'suporte') {
-    setActiveTabSupport(currentSupportTab);
-  } else {
-    setActiveTabDiversos(currentDiversosTab);
-  }
+  if (topName === 'suporte') setActiveTabSupport(currentSupportTab);
+  if (topName === 'diversos') setActiveTabDiversos(currentDiversosTab);
 }
 
-topTabs.forEach(btn => btn.addEventListener('click', () => setTopActive(btn.dataset.top)));
+topTabs.forEach(btn => btn.addEventListener('click', () => {
+  const t = btn.dataset.top;
+  if (t === 'placas') {
+    window.location.href = 'placas_indicadores.html';
+    return;
+  }
+  setTopActive(t);
+}));
 
-/* =========================
-   NAV: SUPORTE
-   ========================= */
+/* =========================================================
+   [BLOCO: NAV Suporte]
+   ========================================================= */
 const tabsSupport = document.querySelectorAll('#appSuporte .nav-btn');
-
 function setActiveTabSupport(tabName){
   currentSupportTab = tabName;
-
   tabsSupport.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
   document.getElementById('screenPadronizador').classList.toggle('active', tabName === 'padronizador');
@@ -1424,30 +1199,25 @@ function setActiveTabSupport(tabName){
 
   closeAllSelects();
 }
+tabsSupport.forEach(btn => btn.addEventListener('click', () => setActiveTabSupport(btn.dataset.tab)));
 
-tabsSupport.forEach(btn => {
-  btn.addEventListener('click', () => setActiveTabSupport(btn.dataset.tab));
-});
-
-/* =========================
-   NAV: DIVERSOS
-   ========================= */
+/* =========================================================
+   [BLOCO: NAV Diversos]
+   ========================================================= */
 const tabsDiversos = document.querySelectorAll('#appDiversos .nav-btn');
-
 function setActiveTabDiversos(tabName){
   currentDiversosTab = tabName;
-
   tabsDiversos.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
   document.getElementById('screenPadronizadorTarifa').classList.toggle('active', tabName === 'padronizador_tarifa');
   document.getElementById('screenPadronizadorInfoRota').classList.toggle('active', tabName === 'padronizador_info_rota');
 }
+tabsDiversos.forEach(btn => btn.addEventListener('click', () => setActiveTabDiversos(btn.dataset.tab)));
 
-tabsDiversos.forEach(btn => {
-  btn.addEventListener('click', () => setActiveTabDiversos(btn.dataset.tab));
-});
-
-/* ===== UI HELPERS ===== */
+/* =========================================================
+   [BLOCO: UI helpers + Submit + Result]
+   (mantive igual ao seu, só ajustei o mínimo)
+   ========================================================= */
 const $ = (id) => document.getElementById(id);
 
 function showLoading() { $('loading').classList.add('show'); }
@@ -1462,14 +1232,13 @@ function clearError() {
   box.style.display = 'none';
   box.textContent = '';
 }
-
 function setLoadingMode(mode){
   let title = 'Processando';
   if (mode === 'importkm')  title = 'Processando Importação de KM';
   if (mode === 'roteiro')   title = 'Processando roteirização';
   if (mode === 'escala')    title = 'Aplicando Escala Padrão';
-  if (mode === 'pad_tarifa') title = 'Processando PADRONIZADOR TARIFA';
-  if (mode === 'info_rota') title = 'Processando PADRONIZADOR INFO-ROTA';
+  if (mode === 'pad_tarifa') title = 'Processando Padronizador Tarifa';
+  if (mode === 'info_rota') title = 'Processando Padronizador Info-Rota';
   $('loadingTitle').textContent = title;
 
   const steps = $('stepList').querySelectorAll('.step');
@@ -1487,7 +1256,6 @@ function setLoadingMode(mode){
     if (txt) txt.textContent = labels[idx] || txt.textContent;
   });
 }
-
 function setProgress(pct, sub, step) {
   $('progressFill').style.width = pct + '%';
   $('progressLabel').textContent = pct + '%';
@@ -1499,18 +1267,15 @@ function setProgress(pct, sub, step) {
     el.classList.toggle('active', step && n === step);
   });
 }
-
 function switchToResult() {
   document.getElementById('appSuporte').style.display = 'none';
   document.getElementById('appDiversos').style.display = 'none';
   document.getElementById('appResult').style.display = '';
 }
 
-/* ===== VOLTAR ===== */
 $('btnAgain').addEventListener('click', () => {
   document.querySelectorAll('.js-upload-form').forEach(f => f.reset());
 
-  // reset selects (suporte)
   const selEmpresa = document.querySelector('#screenPadronizador .custom-select .select-selected');
   if (selEmpresa) selEmpresa.textContent = 'Selecione a empresa';
 
@@ -1530,12 +1295,10 @@ $('btnAgain').addEventListener('click', () => {
   if (mesInput) mesInput.value = '';
   if (monthSelected) monthSelected.textContent = 'Selecione o mês';
 
-  // volta pro app/top atual
   document.getElementById('appResult').style.display = 'none';
   setTopActive(currentTop);
 });
 
-/* ===== SUBMIT (todos os forms) ===== */
 document.querySelectorAll('.js-upload-form').forEach(form => {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1544,39 +1307,33 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
     const mode = form.dataset.mode || 'roteiro';
     setLoadingMode(mode);
 
-    // validações por modo
     if (mode === 'roteiro') {
       const empresa = form.querySelector('input[name="empresa"]')?.value;
       const file = document.getElementById('fileInputRoteiro')?.files?.[0];
       if (!empresa) { alert('Selecione a empresa'); return; }
       if (!file) { alert('Selecione um arquivo'); return; }
       currentTop = 'suporte';
-
     } else if (mode === 'importkm') {
       const filial = form.querySelector('input[name="filial"]')?.value;
       const ano = form.querySelector('input[name="ano"]')?.value;
       const mes = form.querySelector('input[name="mes"]')?.value;
       const file = document.getElementById('fileInputKm')?.files?.[0];
-
       if (!filial) { alert('Selecione a filial'); return; }
       if (!ano) { alert('Selecione o ano'); return; }
       if (!mes) { alert('Selecione o mês'); return; }
       if (!file) { alert('Selecione um arquivo'); return; }
       currentTop = 'suporte';
-
     } else if (mode === 'escala') {
       const f1 = document.getElementById('fileInputEscalaPadronizado')?.files?.[0];
       const f2 = document.getElementById('fileInputEscala')?.files?.[0];
       if (!f1) { alert('Selecione o Arquivo Padronizado (XLSX)'); return; }
       if (!f2) { alert('Selecione a Escala Padrão'); return; }
       currentTop = 'suporte';
-
     } else if (mode === 'pad_tarifa') {
       const f = document.getElementById('fileInputPadTarifa')?.files?.[0];
       if (!f) { alert('Selecione um XLSX'); return; }
       currentTop = 'diversos';
       currentDiversosTab = 'padronizador_tarifa';
-
     } else if (mode === 'info_rota') {
       const f = document.getElementById('fileInputInfoRota')?.files?.[0];
       if (!f) { alert('Selecione um XLSX'); return; }
@@ -1657,27 +1414,24 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       const match = disp.match(/filename\*=UTF-8''([^;]+)|filename=\"?([^\";]+)\"?/i);
 
       let fileName = decodeURIComponent((match && (match[1] || match[2])) || '');
-  if (mode === 'pad_tarifa' || mode === 'info_rota') fileName = '';
 
-      // fallback por modo
-    if (!fileName) {
-  if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.txt';
-  else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.txt';
-  else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
-}
+      if (mode === 'pad_tarifa' || mode === 'info_rota') fileName = '';
 
-// garante extensão TXT nesses dois
-if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)) {
-  fileName = (fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA')) + '.txt';
-}
+      if (!fileName) {
+        if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.txt';
+        else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.txt';
+        else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
+      }
 
+      if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)) {
+        fileName = (fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA')) + '.txt';
+      }
 
       const url = URL.createObjectURL(blob);
       const a = $('btnDownload');
       a.href = url;
       a.download = fileName;
 
-      // origem
       const origem =
         mode === 'importkm'
           ? (form.querySelector('input[name="filial"]')?.value || '—')
@@ -1688,22 +1442,17 @@ if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)
               : (mode === 'pad_tarifa' ? 'Padronizador Tarifa' : 'Padronizador Info-Rota');
 
       $('resModulo').textContent =
-        mode === 'importkm'  ? 'Importação de KM' :
-        mode === 'escala'    ? 'Aplicar Escala Padrão' :
-        mode === 'pad_tarifa' ? 'PADRONIZADOR TARIFA' :
-        mode === 'info_rota' ? 'PADRONIZADOR INFO-ROTA' :
-                               'Padronizador';
+        mode === 'importkm'   ? 'Importação de KM' :
+        mode === 'escala'     ? 'Aplicar Escala Padrão' :
+        mode === 'pad_tarifa' ? 'Padronizador Tarifa' :
+        mode === 'info_rota'  ? 'Padronizador Info-Rota' :
+                                'Padronizador';
 
       $('resOrigem').textContent = origem;
       $('resFileName').textContent = fileName;
       $('resStatus').textContent = 'Concluído';
 
-      $('resTitleTop').textContent =
-        mode === 'importkm'  ? 'Importação de KM' :
-        mode === 'escala'    ? 'Aplicar Escala Padrão' :
-        mode === 'pad_tarifa' ? 'PADRONIZADOR TARIFA' :
-        mode === 'info_rota' ? 'PADRONIZADOR INFO-ROTA' :
-                               'Padronizador';
+      $('resTitleTop').textContent = $('resModulo').textContent;
 
       setProgress(100, 'Pronto!', 5);
       clearInterval(timer);
@@ -1720,11 +1469,16 @@ if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)
   });
 });
 
-/* inicializa top */
-setTopActive('suporte');
+/* =========================================================
+   [BLOCO: INIT — lê ?top=diversos para voltar direto na aba
+   ========================================================= */
+(function initFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const top = (params.get('top') || 'suporte').toLowerCase();
+  if (top === 'diversos') setTopActive('diversos');
+  else setTopActive('suporte');
+})();
 </script>
 
 </body>
 </html>
-
-
