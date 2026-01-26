@@ -8,12 +8,11 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%230f4fa8'/%3E%3Cstop offset='1' stop-color='%232fa4ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M16 18l16 32 16-32' fill='none' stroke='%23fff' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<style>
+<!-- Chart + XLSX (para não quebrar gráfico/import) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-/* =========================================================
-   [A] BASE UI (igual ao index principal)
-   - aqui você muda: cores, fontes, layout geral
-   ========================================================= */
+<style>
 :root {
   --azul-escuro: #0b1c3d;
   --azul: #0f4fa8;
@@ -54,7 +53,7 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== TOP TABS (links entre páginas) ===== */
+/* ===== TOP TABS ===== */
 .top-tabs {
   display: flex;
   gap: 10px;
@@ -382,7 +381,6 @@ h1 {
   .top-tabs { padding: 12px 12px; }
 }
 
-
 /* ===== status pill (online/offline) ===== */
 .pill.offline {
   background: #ffecec !important;
@@ -395,13 +393,9 @@ h1 {
   color: var(--azul);
 }
 
-
 /* =========================================================
    [B] PLACAS/INDICADORES (telas nativas)
-   - aqui você mexe só no "Placas / Histórico / Indicador Falha"
    ========================================================= */
-
-/* evita que o estilo global de .btn (100% width) estrague as actions do módulo */
 .sf-actions-row .btn,
 .sf-actions-row button,
 .sf-inline-upload .btn,
@@ -411,31 +405,43 @@ h1 {
   border-radius: 14px !important;
   font-size: 13px !important;
 }
-
-/* melhora alinhamento da seção dentro do layout */
-#TelaPlacasHistorico, #TelaIndicadorFalha{
-  margin-top: 6px;
-}
-
-/* garante que tabelas e cards não "vazem" */
+#TelaPlacasHistorico, #TelaIndicadorFalha{ margin-top: 6px; }
 .sf-card{ overflow: hidden; }
+@media (max-width: 760px){ .embed-frame{ height: 65vh; } }
 
-/* responsivo do embed do BI */
-@media (max-width: 760px){
-  .embed-frame{ height: 65vh; }
+/* ===== Toast ===== */
+.sf-toast{
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999999;
+  min-width: min(820px, 92vw);
+  display:none;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(11,28,61,0.10);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.16);
+  color: rgba(11,28,61,0.84);
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(14px);
 }
-
+.sf-toast.show{ display:block; animation: toastIn 180ms ease-out; }
+@keyframes toastIn{ from{opacity:0; transform:translateX(-50%) translateY(8px)} to{opacity:1; transform:translateX(-50%) translateY(0)} }
+.sf-toast small{ display:block; margin-top:2px; font-weight:600; color:#5b6b8b; }
+.sf-toast.err{ border-color: rgba(176,0,32,0.18); background: rgba(255,245,245,0.96); color:#9b1c1c; }
+.sf-toast.ok{ border-color: rgba(31,138,58,0.18); background: rgba(239,251,242,0.96); color:#1a6b2f; }
 </style>
 
 <style>
-  /* ===== Ajuste as cores só aqui ===== */
   :root{
     --azul:#2fa4ff;
     --azul-escuro:#0f4fa8;
     --glass-strong: rgba(255,255,255,0.78);
   }
 
-  /* ===== Cards / Layout ===== */
   .sf-card{
     background: var(--glass-strong);
     border: 1px solid #d9e2ef;
@@ -453,7 +459,6 @@ h1 {
   }
   .sf-muted{ color:#5b6b8b; font-size:12px; }
 
-  /* ===== Títulos da tela (opcional) ===== */
   .sf-h1{
     margin: 0 0 6px;
     font-size: 22px;
@@ -468,7 +473,6 @@ h1 {
     font-weight: 700;
   }
 
-  /* ===== Buttons ===== */
   .btn{
     border: 0;
     border-radius: 16px;
@@ -490,7 +494,6 @@ h1 {
     box-shadow: 0 16px 44px rgba(0,0,0,0.06);
   }
 
-  /* ===== Segmented (Placas / Histórico) ===== */
   .sf-seg{ display:flex; gap:10px; margin:0 0 14px; }
   .sf-seg-btn{
     flex:1;
@@ -514,7 +517,6 @@ h1 {
   .sf-view.active{ display:block; animation: sfIn 260ms ease-out; }
   @keyframes sfIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
 
-  /* ===== Actions row / upload ===== */
   .sf-actions-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
   .sf-inline-upload{
     display:flex; align-items:center; gap:8px;
@@ -538,7 +540,6 @@ h1 {
     border: 1px solid rgba(11,28,61,0.08);
   }
 
-  /* ===== Forms ===== */
   .sf-form{ display:grid; gap:12px; }
   .sf-field{ display:grid; gap:8px; }
   .sf-label{ font-size:13px; font-weight:800; color: var(--azul-escuro); }
@@ -557,7 +558,6 @@ h1 {
     box-shadow: 0 0 0 4px rgba(47,164,255,0.22);
   }
 
-  /* ===== Tables ===== */
   .sf-table-wrap{
     max-height: 52vh;
     overflow:auto;
@@ -581,7 +581,6 @@ h1 {
   .sf-row{ cursor:pointer; }
   .sf-row:hover{ background: rgba(47,164,255,0.08); }
 
-  /* ===== Status pills ===== */
   .sf-pill{
     display:inline-flex; align-items:center; gap:8px;
     padding:7px 10px;
@@ -600,12 +599,10 @@ h1 {
   .sf-pill.green{ border-color: rgba(0,128,0,0.22); color:#1a6b2f; background:#effbf2; }
   .sf-pill.green .dot{ background:#1f8a3a; }
 
-  /* ===== Layout grids ===== */
   .sf-grid-3{ display:grid; grid-template-columns: 1fr 1.8fr 1.8fr; gap:14px; }
   .sf-grid-2{ display:grid; grid-template-columns: 1fr 1.3fr; gap:14px; }
   .sf-span-2{ grid-column: span 2; }
 
-  /* ===== Indicador ===== */
   .sf-ind-head{
     display:flex;
     justify-content:space-between;
@@ -692,17 +689,9 @@ h1 {
   .sf-item .left{ display:grid; gap:2px; }
   .sf-item b{ font-size:12.5px; color: rgba(11,28,61,0.86); }
   .sf-item span{ font-size:11.5px; color:#5b6b8b; }
-  .sf-check{
-    width:22px; height:22px; border-radius:8px;
-    display:grid; place-items:center;
-    border:1px solid rgba(11,28,61,0.10);
-    background: rgba(255,255,255,0.75);
-    color: rgba(11,28,61,0.70);
-    font-weight:900;
-  }
-
-  /* ===== Modal ===== */
-  .sf-modal{ position:fixed; inset:0; z-index:999999; }
+  .sf-item .since{ font-size:11px; color:#5b6b8b; opacity:0.95; }
+  .sf-modal{ position:fixed; inset:0; z-index:999999; display:none; align-items:center; justify-content:center; }
+  .sf-modal.show{ display:flex; }
   .sf-modal-backdrop{ position:absolute; inset:0; background: rgba(11,28,61,0.45); backdrop-filter: blur(6px); }
   .sf-modal-card{
     position:relative;
@@ -738,6 +727,7 @@ h1 {
     border-radius:16px;
     padding:12px 14px;
     font-size:13px;
+    display:none;
   }
 
   /* ===== Fullscreen indicador ===== */
@@ -774,7 +764,6 @@ h1 {
 <body>
 <div class="container">
 
-  <!-- TOP TABS (navegação entre páginas) -->
   <div class="top-tabs" role="tablist" aria-label="Abas principais">
     <button class="top-tab" type="button" id="goSuporte" title="Voltar para Suporte">
       <span class="tab-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 7a4 4 0 0 0-5.9 5.2l-4.6 4.6a1 1 0 0 0 0 1.4l1.7 1.7a1 1 0 0 0 1.4 0l4.6-4.6A4 4 0 0 0 17 10l-3 3-2-2 3-3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -786,12 +775,12 @@ h1 {
     </button>
     <button class="top-tab active" type="button" aria-selected="true">
       <span class="tab-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-<path d="M3 16l1-6a3 3 0 0 1 3-2h10a3 3 0 0 1 3 2l1 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-<path d="M5 16h14v3a1 1 0 0 1-1 1h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-<path d="M5 20H4a1 1 0 0 1-1-1v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-<circle cx="7.5" cy="16.5" r="1.5" fill="currentColor"/>
-<circle cx="16.5" cy="16.5" r="1.5" fill="currentColor"/>
-</svg></span>
+        <path d="M3 16l1-6a3 3 0 0 1 3-2h10a3 3 0 0 1 3 2l1 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 16h14v3a1 1 0 0 1-1 1h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 20H4a1 1 0 0 1-1-1v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="7.5" cy="16.5" r="1.5" fill="currentColor"/>
+        <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor"/>
+      </svg></span>
       Placas/Indicadores
     </button>
   </div>
@@ -799,7 +788,6 @@ h1 {
   <div class="app-wrap">
     <div class="app" id="appPlacas">
 
-      <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="brand">
           <div class="logo">
@@ -816,7 +804,7 @@ h1 {
         <nav class="nav" aria-label="Navegação Placas/Indicadores">
           <button class="nav-btn active" type="button" data-tab="indicador_suporte">
             <div class="nav-left">
-              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 19V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
               <div class="nav-label">
                 <b>Indicador Suporte</b>
                 <span>Power BI (embed)</span>
@@ -825,9 +813,26 @@ h1 {
             <div class="nav-chip">BI</div>
           </button>
 
-          <button class="nav-btn" type="button" data-tab="placas">
+          
+          <button class="nav-btn" type="button" data-tab="indicador_alimentacao">
             <div class="nav-left">
-              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
+              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M6 3v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 3v4c0 2 4 2 4 0V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 3v10a4 4 0 0 0 4 4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg></div>
+              <div class="nav-label">
+                <b>Indicador Alimentação</b>
+                <span>Power BI (embed)</span>
+              </div>
+            </div>
+            <div class="nav-chip">BI</div>
+          </button>
+<button class="nav-btn" type="button" data-tab="placas">
+            <div class="nav-left">
+              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 6h13M8 12h13M8 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
               <div class="nav-label">
                 <b>Placas</b>
                 <span>Filtro • Pesquisa • Histórico</span>
@@ -838,7 +843,7 @@ h1 {
 
           <button class="nav-btn" type="button" data-tab="indicador_falha">
             <div class="nav-left">
-              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 8.5C6.5 4 17.5 4 22 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 12c3-3 11-3 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.5 15.5c1.5-1.5 5.5-1.5 7 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg></div>
+              <div class="nav-ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8.5C6.5 4 17.5 4 22 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 12c3-3 11-3 14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8.5 15.5c1.5-1.5 5.5-1.5 7 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg></div>
               <div class="nav-label">
                 <b>Indicador Falha de Sinal</b>
                 <span>Semanal + mensal</span>
@@ -854,7 +859,6 @@ h1 {
         </div>
       </aside>
 
-      <!-- CONTENT -->
       <main class="content">
 
         <div class="screen active" id="screenIndicadorSuporte">
@@ -871,306 +875,293 @@ h1 {
           </div>
         </div>
 
-        <div class="screen" id="screenPlacasHistorico">
-          <!-- =========================================================
-     [A] CSS — SOMENTE Placas + Indicador Falha de Sinal
-     Cole dentro do <head> do seu outro HTML
-     ========================================================= -->
+        
+        <div class="screen" id="screenIndicadorAlimentacao">
+          <h1>Indicador Alimentação</h1>
+          <div class="subtitle">Visualização do Power BI (filtros e interações nativas do relatório)</div>
 
-
-<!-- =========================================================
-     [B] TELA 1 — Placas e Histórico
-     Cole dentro do <body> onde quiser
-     ========================================================= -->
-<section id="TelaPlacasHistorico">
-  <h2 class="sf-h1">Placas e Histórico</h2>
-  <p class="sf-subtitle">
-    <!-- Funcionalidades:
-      - Importar base de placas por XLSX (WIKI e TELEMATIX)
-      - Filtrar por Empresa, Filial(Garagem) e Pesquisa por placa (parcial)
-      - Clicar na placa abre modal para: Adicionar Falha (com data início), Marcar Reportada, Concluir (data fim), Remover
-      - "Histórico" guarda todas as ações feitas (log) e permite filtrar/exportar JSON
-      - Persistência (por padrão): localStorage (troca fácil para webhook depois)
-    -->
-    Filtre por empresa, filial e placa • registre falhas • mantenha histórico
-  </p>
-
-  <div class="sf-seg" role="tablist" aria-label="Sub-abas Placas e Histórico">
-    <button type="button" class="sf-seg-btn active" data-view="placas">Placas</button>
-    <button type="button" class="sf-seg-btn" data-view="historico">Histórico</button>
-  </div>
-
-  <!-- VIEW: PLACAS -->
-  <div class="sf-view active" id="sfViewPlacas">
-    <div class="sf-card">
-      <div class="sf-card-head">
-        <b>Base de Placas</b>
-        <span class="sf-muted" id="sfBaseStatus">—</span>
-      </div>
-
-      <div class="sf-actions-row">
-        <!-- Opcional: se você quiser carregar de /data/... no seu repo, use este botão -->
-        <button class="btn secondary" type="button" id="sfBtnLoadRepo">Atualizar base (repositório)</button>
-
-        <div class="sf-inline-upload">
-          <label class="sf-inline-label">WIKI</label>
-          <input type="file" id="sfFileWiki" accept=".xlsx,.xls">
-        </div>
-
-        <div class="sf-inline-upload">
-          <label class="sf-inline-label">TELEMATIX</label>
-          <input type="file" id="sfFileTele" accept=".xlsx,.xls">
-        </div>
-      </div>
-
-      <div class="sf-small-note">
-        Se usar “Atualizar base (repositório)”, coloque os arquivos em
-        <code>/data/WIKIPLACAS.xlsx</code> e <code>/data/TELEMATIXPLACAS.xlsx</code>.
-      </div>
-    </div>
-
-    <div class="sf-grid-3">
-      <!-- filtros -->
-      <div class="sf-card">
-        <div class="sf-card-head"><b>Filtros</b><span class="sf-muted">Use 1 ou todos</span></div>
-
-        <div class="sf-form">
-          <div class="sf-field">
-            <label class="sf-label">Empresa</label>
-            <select class="sf-input" id="sfFilterEmpresa">
-              <option value="ALL">Todas</option>
-              <option value="WIKI">WIKI</option>
-              <option value="TELEMATIX">TELEMATIX</option>
-            </select>
+          <div class="embed-card">
+            <iframe
+              class="embed-frame"
+              title="Indicador Alimentação (Power BI)"
+              src="https://app.powerbi.com/view?r=eyJrIjoiOTIzZDU5OWEtOGIxZS00MjE1LWI2ZGQtZmEyOGQ5MDc5YjZlIiwidCI6IjdkOTc1NGIzLWRjZGItNGVmZS04YmI3LWMwZTU1ODdiODZlZCJ9"
+              allowfullscreen="true"
+            ></iframe>
           </div>
-
-          <div class="sf-field">
-            <label class="sf-label">Filial (Garagem)</label>
-            <select class="sf-input" id="sfFilterFilial">
-              <option value="ALL">Todas</option>
-            </select>
-          </div>
-
-          <div class="sf-field">
-            <label class="sf-label">Pesquisar placa</label>
-            <input class="sf-input" id="sfFilterPlaca" placeholder="Ex.: ABC1 (busca parcial)" />
-          </div>
-
-          <button class="btn" type="button" id="sfBtnClearFilters">Limpar filtros</button>
-        </div>
-      </div>
-
-      <!-- tabela -->
-      <div class="sf-card sf-span-2">
-        <div class="sf-card-head">
-          <b>Lista de Placas</b>
-          <span class="sf-muted" id="sfListMeta">—</span>
         </div>
 
-        <div class="sf-table-wrap">
-          <table class="sf-table">
-            <thead>
-              <tr>
-                <th>Placa</th>
-                <th>Filial</th>
-                <th>Empresa</th>
-                <th>Status</th>
-                <th>Início</th>
-                <th>Fim</th>
-              </tr>
-            </thead>
-            <tbody id="sfPlacasTbody"></tbody>
-          </table>
-        </div>
+<div class="screen" id="screenPlacasHistorico">
+          <section id="TelaPlacasHistorico">
+            <h2 class="sf-h1">Placas e Histórico</h2>
+            <p class="sf-subtitle">Filtre por empresa, filial e placa • registre falhas • mantenha histórico</p>
 
-        <div class="sf-small-note">Clique em uma linha para <b>registrar / atualizar</b> a falha de sinal.</div>
-      </div>
-    </div>
-  </div>
+            <div class="sf-seg" role="tablist" aria-label="Sub-abas Placas e Histórico">
+              <button type="button" class="sf-seg-btn active" data-view="placas">Placas</button>
+              <button type="button" class="sf-seg-btn" data-view="historico">Histórico</button>
+            </div>
 
-  <!-- VIEW: HISTÓRICO -->
-  <div class="sf-view" id="sfViewHistorico">
-    <div class="sf-grid-2">
-      <div class="sf-card">
-        <div class="sf-card-head"><b>Filtro do histórico</b><span class="sf-muted">Opcional</span></div>
+            <div class="sf-view active" id="sfViewPlacas">
+              <div class="sf-card">
+                <div class="sf-card-head">
+                  <b>Base de Placas</b>
+                  <span class="sf-muted" id="sfBaseStatus">—</span>
+                </div>
 
-        <div class="sf-form">
-          <div class="sf-field">
-            <label class="sf-label">Somente status</label>
-            <select class="sf-input" id="sfHistStatus">
-              <option value="ALL">Todos</option>
-              <option value="falha">Falha de sinal</option>
-              <option value="reportada">Falha reportada</option>
-              <option value="concluida">Resolvido</option>
-              <option value="removida">Removido</option>
-            </select>
-          </div>
+                <div class="sf-actions-row">
+                  <button class="btn secondary" type="button" id="sfBtnLoadRepo">Atualizar base (repositório)</button>
 
-          <div class="sf-field">
-            <label class="sf-label">Pesquisar placa</label>
-            <input class="sf-input" id="sfHistPlaca" placeholder="Ex.: TBO2" />
-          </div>
+                  <div class="sf-inline-upload">
+                    <label class="sf-inline-label">WIKI</label>
+                    <!-- Ajuste: aceita CSV também -->
+                    <input type="file" id="sfFileWiki" accept=".xlsx,.xls,.csv">
+                  </div>
 
-          <button class="btn secondary" type="button" id="sfBtnClearHist">Limpar</button>
-          <button class="btn" type="button" id="sfBtnExportHist">Exportar (JSON)</button>
-        </div>
-      </div>
+                  <div class="sf-inline-upload">
+                    <label class="sf-inline-label">TELEMATIX</label>
+                    <!-- Ajuste: aceita CSV também -->
+                    <input type="file" id="sfFileTele" accept=".xlsx,.xls,.csv">
+                  </div>
+                </div>
 
-      <div class="sf-card">
-        <div class="sf-card-head"><b>Registros</b><span class="sf-muted" id="sfHistMeta">—</span></div>
+                <div class="sf-small-note">
+                  Se usar “Atualizar base (repositório)”, coloque os arquivos em
+                  <code>/data/WIKIPLACAS.xlsx</code> e <code>/data/TELEMATIXPLACAS.xlsx</code>.
+                </div>
+              </div>
 
-        <div class="sf-table-wrap">
-          <table class="sf-table">
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Placa</th>
-                <th>Filial</th>
-                <th>Empresa</th>
-                <th>Ação</th>
-              </tr>
-            </thead>
-            <tbody id="sfHistTbody"></tbody>
-          </table>
-        </div>
+              <div class="sf-grid-3">
+                <div class="sf-card">
+                  <div class="sf-card-head"><b>Filtros</b><span class="sf-muted">Use 1 ou todos</span></div>
 
-        <div class="sf-small-note">
-          Histórico registra todas as ações feitas (add/reportar/concluir/remover). Por padrão fica em <code>localStorage</code>.
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+                  <div class="sf-form">
+                    <div class="sf-field">
+                      <label class="sf-label">Empresa</label>
+                      <select class="sf-input" id="sfFilterEmpresa">
+                        <option value="ALL">Todas</option>
+                        <option value="WIKI">WIKI</option>
+                        <option value="TELEMATIX">TELEMATIX</option>
+                      </select>
+                    </div>
 
-<!-- =========================================================
-     [C] TELA 2 — Indicador Falha de Sinal (nativo)
-     Cole dentro do <body> onde quiser
-     ========================================================= -->
+                    <div class="sf-field">
+                      <label class="sf-label">Filial (Garagem)</label>
+                      <select class="sf-input" id="sfFilterFilial">
+                        <option value="ALL">Todas</option>
+                      </select>
+                    </div>
 
+                    <div class="sf-field">
+                      <label class="sf-label">Pesquisar placa</label>
+                      <input class="sf-input" id="sfFilterPlaca" placeholder="Ex.: ABC1 (busca parcial)" />
+                    </div>
+
+                    <button class="btn" type="button" id="sfBtnClearFilters">Limpar filtros</button>
+                  </div>
+                </div>
+
+                <div class="sf-card sf-span-2">
+                  <div class="sf-card-head">
+                    <b>Lista de Placas</b>
+                    <span class="sf-muted" id="sfListMeta">—</span>
+                  </div>
+
+                  <div class="sf-table-wrap">
+                    <table class="sf-table">
+                      <thead>
+                        <tr>
+                          <th>Placa</th>
+                          <th>Filial</th>
+                          <th>Empresa</th>
+                          <th>Status</th>
+                          <th>Início</th>
+                          <th>Fim</th>
+                        </tr>
+                      </thead>
+                      <tbody id="sfPlacasTbody"></tbody>
+                    </table>
+                  </div>
+
+                  <div class="sf-small-note">Clique em uma linha para <b>registrar / atualizar</b> a falha de sinal.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sf-view" id="sfViewHistorico">
+              <div class="sf-grid-2">
+                <div class="sf-card">
+                  <div class="sf-card-head"><b>Filtro do histórico</b><span class="sf-muted">Opcional</span></div>
+
+                  <div class="sf-form">
+                    <div class="sf-field">
+                      <label class="sf-label">Somente status</label>
+                      <select class="sf-input" id="sfHistStatus">
+                        <option value="ALL">Todos</option>
+                        <option value="falha">Falha de sinal</option>
+                        <option value="reportada">Falha reportada</option>
+                        <option value="concluida">Resolvido</option>
+                        <option value="removida">Removido</option>
+                      </select>
+                    </div>
+
+                    <div class="sf-field">
+                      <label class="sf-label">Pesquisar placa</label>
+                      <input class="sf-input" id="sfHistPlaca" placeholder="Ex.: TBO2" />
+                    </div>
+
+                    <button class="btn secondary" type="button" id="sfBtnClearHist">Limpar</button>
+                    <button class="btn" type="button" id="sfBtnExportHist">Exportar (JSON)</button>
+                  </div>
+                </div>
+
+                <div class="sf-card">
+                  <div class="sf-card-head"><b>Registros</b><span class="sf-muted" id="sfHistMeta">—</span></div>
+
+                  <div class="sf-table-wrap">
+                    <table class="sf-table">
+                      <thead>
+                        <tr>
+                          <th>Data/Hora</th>
+                          <th>Placa</th>
+                          <th>Filial</th>
+                          <th>Empresa</th>
+                          <th>Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody id="sfHistTbody"></tbody>
+                    </table>
+                  </div>
+
+                  <div class="sf-small-note">
+                    Histórico registra todas as ações feitas. Por padrão fica em <code>localStorage</code>.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div class="screen" id="screenIndicadorFalha">
           <section id="TelaIndicadorFalha">
-  <h2 class="sf-h1">Indicador Falha de Sinal</h2>
-  <p class="sf-subtitle">
-    <!-- Funcionalidades:
-      - Modo Semanal (semana atual de SEG a DOM): conta placas por status naquele período
-      - Modo Mensal: barras empilhadas por semana do mês (S1..S4/5)
-      - % Falha de sinal = (OK / TOTAL) onde OK = (reportada + concluída), TOTAL = (falha + reportada + concluída)
-      - Listas laterais mostram QUAIS placas estão em cada status no período selecionado
-      - Botão Tela Cheia para tirar print (e fechar)
-    -->
-    Semanal e mensal • % (somente “Falha de sinal” reduz) • listas de placas por status
-  </p>
+            <h2 class="sf-h1">Indicador Falha de Sinal</h2>
+            <p class="sf-subtitle">Semanal e mensal • % (somente “Falha de sinal” reduz) • listas de placas por status</p>
 
-  <div class="sf-card" id="sfIndicatorPanel">
-    <div class="sf-ind-head">
-      <div>
-        <div style="display:grid;gap:3px;">
-          <b>Porcentagem falha de sinal</b>
-          <span class="sf-muted" id="sfIndRange">—</span>
+            <div class="sf-card" id="sfIndicatorPanel">
+              <div class="sf-ind-head">
+                <div>
+                  <div style="display:grid;gap:3px;">
+                    <b>Porcentagem falha de sinal</b>
+                    <span class="sf-muted" id="sfIndRange">—</span>
+                  </div>
+
+                  <div class="sf-toggle" style="margin-top:10px;">
+                    <button type="button" class="sf-toggle-btn active" data-mode="weekly">Semanal</button>
+                    <button type="button" class="sf-toggle-btn" data-mode="monthly">Mensal</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                  <div id="sfMonthWrap">
+                    <label class="sf-label" style="margin:0 0 6px;">Mês</label>
+                    <input class="sf-input" type="month" id="sfMonthPick">
+                  </div>
+
+                  <div id="sfWeekWrap">
+                    <label class="sf-label" style="margin:0 0 6px;">Semana</label>
+                    <select class="sf-input" id="sfWeekPick"></select>
+                  </div>
+
+                  <button class="btn secondary" type="button" id="sfBtnFull">Tela cheia</button>
+                </div>
+              </div>
+
+              <div class="sf-kpi-row">
+                <div class="sf-kpi">
+                  <div class="sf-kpi-label">% (ok / total)</div>
+                  <div class="sf-kpi-value" id="sfPctValue">—</div>
+                  <div class="sf-kpi-sub" id="sfPctSub">—</div>
+                  <div class="sf-kpi-bar"><div class="sf-kpi-fill" id="sfPctFill"></div></div>
+                </div>
+
+                <div class="sf-kpi">
+                  <div class="sf-kpi-label">Falha de sinal</div>
+                  <div class="sf-kpi-value sf-red" id="sfCntFalha">—</div>
+                </div>
+
+                <div class="sf-kpi">
+                  <div class="sf-kpi-label">Falha reportada</div>
+                  <div class="sf-kpi-value sf-orange" id="sfCntReport">—</div>
+                </div>
+
+                <div class="sf-kpi">
+                  <div class="sf-kpi-label">Resolvido</div>
+                  <div class="sf-kpi-value sf-green" id="sfCntConcl">—</div>
+                </div>
+              </div>
+
+              <div class="sf-ind-grid">
+                <div class="sf-card">
+                  <div class="sf-card-head">
+                    <b id="sfChartTitle">Semanal</b>
+                    <span class="sf-muted" id="sfChartHint">Contagem por status</span>
+                  </div>
+
+                  <div class="sf-chart-wrap" id="sfWeeklyWrap">
+                    <canvas id="sfWeeklyChart" height="140"></canvas>
+                  </div>
+
+                  <div class="sf-chart-wrap" id="sfMonthlyWrap" style="display:none;">
+                    <canvas id="sfMonthlyChart" height="220"></canvas>
+                  </div>
+                </div>
+
+                <div class="sf-card">
+                  <div class="sf-card-head"><b>Placas por status</b><span class="sf-muted">Atualiza conforme período</span></div>
+
+                  <div class="sf-list">
+                    <div class="sf-list-head">
+                      <span class="sf-dot sf-dot-red"></span>
+                      <b>Falha de sinal</b>
+                      <span class="sf-badge" id="sfBadgeFalha">0</span>
+                    </div>
+                    <div class="sf-list-body" id="sfListFalha"></div>
+                  </div>
+
+                  <div class="sf-list">
+                    <div class="sf-list-head">
+                      <span class="sf-dot sf-dot-orange"></span>
+                      <b>Falha reportada</b>
+                      <span class="sf-badge" id="sfBadgeReport">0</span>
+                    </div>
+                    <div class="sf-list-body" id="sfListReport"></div>
+                  </div>
+
+                  <div class="sf-list">
+                    <div class="sf-list-head">
+                      <span class="sf-dot sf-dot-green"></span>
+                      <b>Resolvido</b>
+                      <span class="sf-badge" id="sfBadgeConcl">0</span>
+                    </div>
+                    <div class="sf-list-body" id="sfListConcl"></div>
+                  </div>
+
+                  <div class="sf-small-note">Obs.: Só <b>Falha de sinal</b> reduz a %.</div>
+                </div>
+              </div>
+
+              <button class="sf-full-close" type="button" id="sfBtnFullClose">Fechar</button>
+            </div>
+          </section>
         </div>
 
-        <div class="sf-toggle" style="margin-top:10px;">
-          <button type="button" class="sf-toggle-btn active" data-mode="weekly">Semanal</button>
-          <button type="button" class="sf-toggle-btn" data-mode="monthly">Mensal</button>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-        <div id="sfMonthWrap" style="display:none;">
-          <label class="sf-label" style="margin:0 0 6px;">Mês</label>
-          <input class="sf-input" type="month" id="sfMonthPick">
-        </div>
-        <button class="btn secondary" type="button" id="sfBtnFull">Tela cheia</button>
-      </div>
+      </main>
     </div>
-
-    <div class="sf-kpi-row">
-      <div class="sf-kpi">
-        <div class="sf-kpi-label">% (ok / total)</div>
-        <div class="sf-kpi-value" id="sfPctValue">—</div>
-        <div class="sf-kpi-sub" id="sfPctSub">—</div>
-        <div class="sf-kpi-bar"><div class="sf-kpi-fill" id="sfPctFill"></div></div>
-      </div>
-
-      <div class="sf-kpi">
-        <div class="sf-kpi-label">Falha de sinal</div>
-        <div class="sf-kpi-value sf-red" id="sfCntFalha">—</div>
-      </div>
-
-      <div class="sf-kpi">
-        <div class="sf-kpi-label">Falha reportada</div>
-        <div class="sf-kpi-value sf-orange" id="sfCntReport">—</div>
-      </div>
-
-      <div class="sf-kpi">
-        <div class="sf-kpi-label">Resolvido</div>
-        <div class="sf-kpi-value sf-green" id="sfCntConcl">—</div>
-      </div>
-    </div>
-
-    <div class="sf-ind-grid">
-      <!-- charts -->
-      <div class="sf-card">
-        <div class="sf-card-head">
-          <b id="sfChartTitle">Semanal</b>
-          <span class="sf-muted" id="sfChartHint">Contagem por status</span>
-        </div>
-
-        <div class="sf-chart-wrap" id="sfWeeklyWrap">
-          <canvas id="sfWeeklyChart" height="140"></canvas>
-        </div>
-
-        <div class="sf-chart-wrap" id="sfMonthlyWrap" style="display:none;">
-          <canvas id="sfMonthlyChart" height="220"></canvas>
-        </div>
-      </div>
-
-      <!-- lists -->
-      <div class="sf-card">
-        <div class="sf-card-head"><b>Placas por status</b><span class="sf-muted">Atualiza conforme período</span></div>
-
-        <div class="sf-list">
-          <div class="sf-list-head">
-            <span class="sf-dot sf-dot-red"></span>
-            <b>Falha de sinal</b>
-            <span class="sf-badge" id="sfBadgeFalha">0</span>
-          </div>
-          <div class="sf-list-body" id="sfListFalha"></div>
-        </div>
-
-        <div class="sf-list">
-          <div class="sf-list-head">
-            <span class="sf-dot sf-dot-orange"></span>
-            <b>Falha reportada</b>
-            <span class="sf-badge" id="sfBadgeReport">0</span>
-          </div>
-          <div class="sf-list-body" id="sfListReport"></div>
-        </div>
-
-        <div class="sf-list">
-          <div class="sf-list-head">
-            <span class="sf-dot sf-dot-green"></span>
-            <b>Resolvido</b>
-            <span class="sf-badge" id="sfBadgeConcl">0</span>
-          </div>
-          <div class="sf-list-body" id="sfListConcl"></div>
-        </div>
-
-        <div class="sf-small-note">Obs.: Só <b>Falha de sinal</b> reduz a %.</div>
-      </div>
-    </div>
-
-    <button class="sf-full-close" type="button" id="sfBtnFullClose">Fechar</button>
   </div>
-</section>
+</div>
 
-<!-- =========================================================
-     [D] MODAL — CRUD Falha por placa (usado na tela de Placas)
-     Cole dentro do <body> (uma vez só)
-     ========================================================= -->
-<div class="sf-modal" id="sfModal" aria-hidden="true" style="display:none;">
+<!-- Toast -->
+<div class="sf-toast" id="sfToast" role="status" aria-live="polite"></div>
+
+<div class="sf-modal" id="sfModal" aria-hidden="true" >
   <div class="sf-modal-backdrop" data-close="1"></div>
 
   <div class="sf-modal-card" role="dialog" aria-modal="true" aria-labelledby="sfModalTitle">
@@ -1199,7 +1190,7 @@ h1 {
               <input class="sf-input" type="date" id="sfInputInicio">
             </div>
 
-            <div class="sf-field" id="sfFieldFim" style="display:none;">
+            <div class="sf-field" id="sfFieldFim" >
               <label class="sf-label">Data de fim</label>
               <input class="sf-input" type="date" id="sfInputFim">
             </div>
@@ -1211,7 +1202,7 @@ h1 {
               <button class="btn secondary" type="button" id="sfBtnRemover">Remover Falha</button>
             </div>
 
-            <div class="sf-error" id="sfModalErr" style="display:none;"></div>
+            <div class="sf-error" id="sfModalErr"></div>
           </div>
         </div>
       </div>
@@ -1223,27 +1214,36 @@ h1 {
   </div>
 </div>
 
-<!-- =========================================================
-     [E] JS — SOMENTE Placas + Indicador Falha
-     Cole antes do </body>
-     ========================================================= -->
-        </div>
-
-      </main>
-    </div>
-  </div>
-</div>
-
 <script>
+/* ===========================
+   NAV topo
+=========================== */
 const INDEX_PAGE = 'index.html';
+document.getElementById('goSuporte').addEventListener('click', () => window.location.href = INDEX_PAGE + '?top=suporte');
+document.getElementById('goDiversos').addEventListener('click', () => window.location.href = INDEX_PAGE + '?top=diversos');
 
-document.getElementById('goSuporte').addEventListener('click', () => {
-  window.location.href = INDEX_PAGE + '?top=suporte';
-});
-document.getElementById('goDiversos').addEventListener('click', () => {
-  window.location.href = INDEX_PAGE + '?top=diversos';
-});
+/* ===========================
+   Toast util (novo)
+=========================== */
+const Toast = (() => {
+  const el = document.getElementById('sfToast');
+  let t = null;
+  const show = (msg, sub, type='') => {
+    if (!el) return;
+    el.classList.remove('err','ok','show');
+    if (type === 'err') el.classList.add('err');
+    if (type === 'ok') el.classList.add('ok');
+    el.innerHTML = `${escapeHtml(msg)}${sub ? `<small>${escapeHtml(sub)}</small>` : ''}`;
+    el.classList.add('show');
+    clearTimeout(t);
+    t = setTimeout(() => el.classList.remove('show'), 4200);
+  };
+  return { show };
+})();
 
+/* ===========================
+   Status n8n
+=========================== */
 async function checkN8nStatus() {
   const pills = document.querySelectorAll('.brand .pill');
   if (!pills.length) return;
@@ -1252,11 +1252,7 @@ async function checkN8nStatus() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
 
-    const res = await fetch(
-      'https://n8n.datastack.viagroup.com.br/webhook/online',
-      { signal: controller.signal }
-    );
-
+    const res = await fetch('https://n8n.datastack.viagroup.com.br/webhook/online', { signal: controller.signal });
     clearTimeout(timeout);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -1267,9 +1263,7 @@ async function checkN8nStatus() {
         pill.classList.remove('offline');
         pill.classList.add('online');
       });
-    } else {
-      throw new Error('offline');
-    }
+    } else throw new Error('offline');
   } catch (e) {
     pills.forEach(pill => {
       pill.innerHTML = 'offline';
@@ -1281,856 +1275,1119 @@ async function checkN8nStatus() {
 checkN8nStatus();
 setInterval(checkN8nStatus, 60000);
 
+/* ===========================
+   Tabs sidebar (telas)
+=========================== */
 const navBtns = document.querySelectorAll('#appPlacas .nav-btn');
-
 function setActiveTab(tab) {
   navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-
   document.getElementById('screenIndicadorSuporte').classList.toggle('active', tab === 'indicador_suporte');
+  document.getElementById('screenIndicadorAlimentacao').classList.toggle('active', tab === 'indicador_alimentacao');
   document.getElementById('screenPlacasHistorico').classList.toggle('active', tab === 'placas');
   document.getElementById('screenIndicadorFalha').classList.toggle('active', tab === 'indicador_falha');
+  if (tab === 'indicador_falha') SF.renderIndicator();
 }
-
 navBtns.forEach(btn => btn.addEventListener('click', () => setActiveTab(btn.dataset.tab)));
 
-window.SF_EMBED_BASE = {
-  wiki: [{"placa": "BDR4J97", "filial": "PR - Jaguariaiva"}, {"placa": "Extrav(SDU8I71)", "filial": "X - Reservas"}, {"placa": "SFI2I75", "filial": "PR - Jaguariaiva"}, {"placa": "SFI2I76", "filial": "PR - Jaguariaiva"}, {"placa": "SFI2I78", "filial": "PR - Jaguariaiva"}, {"placa": "SFI2I81", "filial": "PR - Jaguariaiva"}, {"placa": "SFI2I82", "filial": "PR - Jaguariaiva"}, {"placa": "SFI2I83", "filial": "PR - Jaguariaiva"}, {"placa": "SFI6D17", "filial": "PR - Jaguariaiva"}, {"placa": "SFI6D20", "filial": "PR - Jaguariaiva"}, {"placa": "SFI6D22", "filial": "PR - Jaguariaiva"}, {"placa": "SFI6D24", "filial": "PR - Jaguariaiva"}, {"placa": "863238071171211", "filial": "PR - Jaguariaiva"}, {"placa": "863238074439722", "filial": "PR - Jaguariaiva"}, {"placa": "865413055397714", "filial": "PR - Jaguariaiva"}, {"placa": "865413056712283", "filial": "PR - Jaguariaiva"}, {"placa": "865413059081306", "filial": "PR - Jaguariaiva"}, {"placa": "868018070965234", "filial": "PR - Jaguariaiva"}, {"placa": "868018070974228", "filial": "PR - Jaguariaiva"}, {"placa": "868018070983963", "filial": "PR - Jaguariaiva"}, {"placa": "869671071102667", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D20", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D28", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D43", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D49", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D74", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D81", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D84", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D94", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D96", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5D98", "filial": "PR - Jaguariaiva"}, {"placa": "TXM5E00", "filial": "PR - Jaguariaiva"}, {"placa": "RVJ2H74", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "IYZ5D13", "filial": "PR - Juvinopolis"}, {"placa": "SFC4C73", "filial": "PR - Arapoti"}, {"placa": "SFD1D80", "filial": "RS - Trindade do Sul"}, {"placa": "SFD1D82", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFD1D83", "filial": "RS - Trindade do Sul"}, {"placa": "SFD4F22", "filial": "PR - Arapoti"}, {"placa": "SFD4F23", "filial": "RS - Trindade do Sul"}, {"placa": "SFD9J63", "filial": "RS - Trindade do Sul"}, {"placa": "SFD9J64", "filial": "RS - Trindade do Sul"}, {"placa": "SFE1D65", "filial": "PR - Arapoti"}, {"placa": "SFF9A02", "filial": "PR - Arapoti"}, {"placa": "RUM4H63", "filial": "PR - Jaguariaiva"}, {"placa": "RUN7H03", "filial": "PR - Jaguariaiva"}, {"placa": "RUT2D17", "filial": "PR - Jaguariaiva"}, {"placa": "RVN0J13", "filial": "PR - Jaguariaiva"}, {"placa": "RVW5H73", "filial": "PR - Jaguariaiva"}, {"placa": "UGPE40", "filial": "Garagem Padrão"}, {"placa": "SEG6E14", "filial": "PR - Jaguariaiva"}, {"placa": "SEG6E16", "filial": "PR - Jaguariaiva"}, {"placa": "SEG7C37", "filial": "PR - Jaguariaiva"}, {"placa": "SEG7C40", "filial": "PR - Jaguariaiva"}, {"placa": "PXO4H35", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "JBO7G08", "filial": "RS - Catuípe"}, {"placa": "JBP9B75", "filial": "PR - Juvinopolis"}, {"placa": "JCS1F65", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "JCT8E73", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "JCX4H40", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "JDD2B78", "filial": "PR - Juvinopolis"}, {"placa": "JBQ7J64", "filial": "RS - Aratiba"}, {"placa": "BCN5B43", "filial": "PR - Guarapuava"}, {"placa": "BEE4F83", "filial": "RS - Passo Fundo"}, {"placa": "JAG8A56", "filial": "RS - Aratiba"}, {"placa": "OQX8E74", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "SDP8D48", "filial": "RS - Três Passos"}, {"placa": "SDP8D49", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "SDR0F91", "filial": "RS - Crissiumal"}, {"placa": "SDR0F93", "filial": "RS - Crissiumal"}, {"placa": "SDR5D10", "filial": "RS - Passo Fundo"}, {"placa": "SDS8H06", "filial": "RS - Crissiumal"}, {"placa": "SDT2J38", "filial": "RS - Crissiumal"}, {"placa": "SDU2G92", "filial": "RS - Crissiumal"}, {"placa": "SDW0C94", "filial": "RS - Crissiumal"}, {"placa": "SDY3B86", "filial": "RS - Catuípe"}, {"placa": "SEI6A35", "filial": "RS - Tenente Portela"}, {"placa": "PUO8B53", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "SDR6G92", "filial": "RS - Três Passos"}, {"placa": "BEF8E30", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "BEI6I82", "filial": "RS - Passo Fundo"}, {"placa": "TAO6E43", "filial": "RS - Tenente Portela"}, {"placa": "TAO6E54", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAP2G32", "filial": "RS - Crissiumal"}, {"placa": "TAR5B64", "filial": "RS - Crissiumal"}, {"placa": "TAO7B38", "filial": "RS - Aratiba"}, {"placa": "TAP2G41", "filial": "RS - Tenente Portela"}, {"placa": "TAO6E45", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAO6E55", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TBI6C01", "filial": "RS - Tenente Portela"}, {"placa": "TBI6C02", "filial": "RS - Catuípe"}, {"placa": "TBK5B04", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TBK5B07", "filial": "RS - Aratiba"}, {"placa": "TBK5B08", "filial": "RS - Tenente Portela"}, {"placa": "TBK5B23", "filial": "RS - Passo Fundo"}, {"placa": "TBO2A11", "filial": "RS - Aratiba"}, {"placa": "TBO2A15", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TBO2A17", "filial": "RS - Catuípe"}, {"placa": "TBO2A30", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TBP8I74", "filial": "RS - Crissiumal"}, {"placa": "TBO2A36", "filial": "RS - Catuípe"}, {"placa": "ILV8J77", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "RHC0H28", "filial": "PR - Guarapuava"}, {"placa": "BEE4F85", "filial": "RS - Crissiumal"}, {"placa": "RHG7A84", "filial": "PR - Juvinopolis"}, {"placa": "RHG7A95", "filial": "RS - Crissiumal"}, {"placa": "RHG7A97", "filial": "RS - Crissiumal"}, {"placa": "RHY8C72", "filial": "PR - Juvinopolis"}, {"placa": "SDQ9G43", "filial": "RS - Crissiumal"}, {"placa": "SDS7A12", "filial": "RS - Crissiumal"}, {"placa": "SDS7A13", "filial": "RS - Crissiumal"}, {"placa": "SDZ7D26", "filial": "RS - Girua"}, {"placa": "AZC5J25", "filial": "PR - Castro (Castrolanda)"}, {"placa": "BDB4I02", "filial": "RS - Três Passos"}, {"placa": "BEC2C54", "filial": "PR - Guarapuava"}, {"placa": "BEE4F86", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "BEE4F87", "filial": "X - Reservas"}, {"placa": "IYS4A10", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "IYV2E98", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "JBC6H08", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "QHV0A80", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "RHB7F85", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "RHD8G20", "filial": "RS - Passo Fundo"}, {"placa": "RHF5B65", "filial": "RS - Passo Fundo"}, {"placa": "RHG7A85", "filial": "RS - Passo Fundo"}, {"placa": "RHG7A86", "filial": "RS - Passo Fundo"}, {"placa": "RHG7A89", "filial": "RS - Passo Fundo"}, {"placa": "RHG7A91", "filial": "RS - Crissiumal"}, {"placa": "RHH1A81", "filial": "PR - Juvinopolis"}, {"placa": "RHY4B25", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "SDP3F36", "filial": "RS - Três Passos"}, {"placa": "SDR4J28", "filial": "RS - Aratiba"}, {"placa": "SDR5D11", "filial": "RS - Carazinho"}, {"placa": "SDR6F72", "filial": "RS - Carazinho"}, {"placa": "SDR9A80", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "SDS0H39", "filial": "RS - Passo Fundo"}, {"placa": "SDS7H24", "filial": "RS - Carazinho"}, {"placa": "SDT2E20", "filial": "RS - Carazinho"}, {"placa": "SDT5D96", "filial": "RS - Carazinho"}, {"placa": "SDU1D04", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "SDU2G91", "filial": "RS - Três Passos"}, {"placa": "SDV3B03", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "SED3I59", "filial": "RS - Carazinho"}, {"placa": "SEG5A49", "filial": "RS - Carazinho"}, {"placa": "SDT5D95", "filial": "PR - Castro (Castrolanda)"}, {"placa": "BEF9B57", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "RHA2H51", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "RHC2B06", "filial": "PR - Carambei (Frisia)"}, {"placa": "RHF7H19", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "RKW0B00", "filial": "PR - Carambei (Frisia)"}, {"placa": "RKY0B00", "filial": "Garagem Padrão"}, {"placa": "SDR8A13", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "SDX3F79", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "BEE3E71", "filial": "RS - Carazinho"}, {"placa": "RHY9A54", "filial": "RS - Carazinho"}, {"placa": "SDR8F44", "filial": "PR - Juvinopolis"}, {"placa": "SDQ3F97", "filial": "PR - Castro (Castrolanda)"}, {"placa": "JCL0A78", "filial": "RS - Catuípe"}, {"placa": "SKM4I44", "filial": "RS - Carazinho"}, {"placa": "SKM8C42", "filial": "RS - Carazinho"}, {"placa": "SKN1H20", "filial": "RS - Carazinho"}, {"placa": "SKN5G06", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "SYA8J68", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TAJ7F25", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F27", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F29", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F31", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TAJ7F33", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F35", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F37", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F39", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F40", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAJ7F42", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TAO6E56", "filial": "PR - Juvinopolis"}, {"placa": "TAO6E62", "filial": "RS - Catuípe"}, {"placa": "TAP2G28", "filial": "RS - Passo Fundo"}, {"placa": "TAP2G62", "filial": "RS - Carazinho"}, {"placa": "TTA2F31", "filial": "RS - Passo Fundo"}, {"placa": "TTE7I79", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TTE7I80", "filial": "RS - Crissiumal"}, {"placa": "TTE7I81", "filial": "RS - Crissiumal"}, {"placa": "TTI4I01", "filial": "RS - Crissiumal"}, {"placa": "TTI4I02", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TTI4I03", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TTN0I26", "filial": "RS - Passo Fundo"}, {"placa": "TTN0I27", "filial": "RS - Crissiumal"}, {"placa": "TUN0I64", "filial": "RS - Carazinho"}, {"placa": "TUP1A76", "filial": "RS - Crissiumal"}, {"placa": "TUU1D15", "filial": "RS - Carazinho"}, {"placa": "SDT9B36", "filial": "SC - Xanxerê"}, {"placa": "ARC6D31", "filial": "SC - Mafra"}, {"placa": "BCP9A07", "filial": "RS - Trindade do Sul"}, {"placa": "BEE2F38", "filial": "PR - Juvinopolis"}, {"placa": "BEE4D36", "filial": "PR - Guarapuava"}, {"placa": "BEF9B61", "filial": "PR - Castro (Seara)"}, {"placa": "BEU4E91", "filial": "PR - Carambei (Frisia)"}, {"placa": "BEW9C98", "filial": "PR - Guarapuava"}, {"placa": "BEX3E88", "filial": "PR - Carambei (Frisia)"}, {"placa": "BEY7C50", "filial": "PR - Guarapuava"}, {"placa": "RHA4D61", "filial": "Garagem Padrão"}, {"placa": "RHB7J49", "filial": "PR - Castro (Seara)"}, {"placa": "RHC2J37", "filial": "PR - Juvinopolis"}, {"placa": "RHE5F12", "filial": "PR - Castro (Seara)"}, {"placa": "RHF6I76", "filial": "PR - Carambei (Frisia)"}, {"placa": "RHF9C70", "filial": "Garagem Padrão"}, {"placa": "RHG4E02", "filial": "PR - Carambei (Frisia)"}, {"placa": "RHH1H68", "filial": "Garagem Padrão"}, {"placa": "RHH4D50", "filial": "PR - Castro (Seara)"}, {"placa": "RHI4D79", "filial": "RS - Trindade do Sul"}, {"placa": "RHJ9J40", "filial": "Garagem Padrão"}, {"placa": "RHL6D23", "filial": "PR - Castro (Seara)"}, {"placa": "RHN5B71", "filial": "Garagem Padrão"}, {"placa": "RHO6C67", "filial": "RS - Trindade do Sul"}, {"placa": "RHP3A58", "filial": "RS - Trindade do Sul"}, {"placa": "RHP9J85", "filial": "Garagem Padrão"}, {"placa": "RHY9B42", "filial": "PR - Carambei (Frisia)"}, {"placa": "RHZ4A91", "filial": "SC - Xanxerê"}, {"placa": "RHZ8F32", "filial": "PR - Carambei (Frisia)"}, {"placa": "SDP6J81", "filial": "PR - Carambei (Frisia)"}, {"placa": "SDQ9H49", "filial": "Garagem Padrão"}, {"placa": "SDR8G32", "filial": "PR - Guarapuava"}, {"placa": "SDS4A46", "filial": "RS - Frederico Westphalen"}, {"placa": "SDT5G79", "filial": "PR - Guarapuava"}, {"placa": "SDT5G80", "filial": "PR - Castro (Seara)"}, {"placa": "SDU7J74", "filial": "PR - Castro (Seara)"}, {"placa": "SDU8I71", "filial": "PR - Arapoti"}, {"placa": "SDV4F91", "filial": "PR - Guarapuava"}, {"placa": "SDV6C37", "filial": "PR - Juvinopolis"}, {"placa": "SDV6J22", "filial": "SC - São Miguel do Oeste"}, {"placa": "SDV8D97", "filial": "SC - Mafra"}, {"placa": "SDV9B64", "filial": "SC - Mafra"}, {"placa": "SDW0J71", "filial": "SC - São Miguel do Oeste"}, {"placa": "SDX0D31", "filial": "SC - Mafra"}, {"placa": "SDX8G71", "filial": "SC - Mafra"}, {"placa": "SDX9E72", "filial": "PR - Castro (Seara)"}, {"placa": "SDY1E23", "filial": "PR - Castro (Castrolanda)"}, {"placa": "SDY8F61", "filial": "PR - Castro (Castrolanda)"}, {"placa": "SDZ0C36", "filial": "Garagem Padrão"}, {"placa": "SDZ2E18", "filial": "PR - Arapoti"}, {"placa": "SDZ2E29", "filial": "PR - Juvinopolis"}, {"placa": "SDZ6C69", "filial": "PR - Guarapuava"}, {"placa": "SDZ6C86", "filial": "SC - Mafra"}, {"placa": "SDZ9J69", "filial": "SC - Mafra"}, {"placa": "SEA1F66", "filial": "PR - Castro (Seara)"}, {"placa": "SEA2I04", "filial": "Garagem Padrão"}, {"placa": "SEA6B85", "filial": "PR - Castro (Seara)"}, {"placa": "SEC0D69", "filial": "PR - Guarapuava"}, {"placa": "SFG4D88", "filial": "SC - Xanxerê"}, {"placa": "SFG4D97", "filial": "SC - Xanxerê"}, {"placa": "SFI2F50", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFI2F56", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFI5D32", "filial": "SC - Xanxerê"}, {"placa": "SFI5D34", "filial": "SC - Xanxerê"}, {"placa": "SFI6J50", "filial": "SC - Xanxerê"}, {"placa": "SFI6J61", "filial": "SC - Xanxerê"}, {"placa": "SFM3I02", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFN2B05", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFN2B06", "filial": "RS - Trindade do Sul"}, {"placa": "SFN2B07", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFN2B08", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFN2B09", "filial": "RS - Trindade do Sul"}, {"placa": "SFN4I40", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFN4I41", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFN4I45", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFO0C56", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAI6D12", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "SFO3B98", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAI1C89", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAO7A42", "filial": "PR - Juvinopolis"}, {"placa": "TAJ2E23", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAJ3J30", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAK3I45", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAL7C75", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "SFF3I79", "filial": "RS - Girua"}, {"placa": "SFD1D84", "filial": "RS - Trindade do Sul"}, {"placa": "SFD4H88", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFD4H93", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFD8A46", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFD8A47", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFD8A48", "filial": "SC - São Miguel do Oeste"}, {"placa": "SFE7F91", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFE9H78", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFE9I21", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFE9I22", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFJ2I66", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFJ2I67", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFJ2I68", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFJ2I72", "filial": "RS - Trindade do Sul"}, {"placa": "SFJ7A61", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFK2D89", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFL5A35", "filial": "RS - Trindade do Sul"}, {"placa": "SFL5A36", "filial": "RS - Trindade do Sul"}, {"placa": "SFL5A45", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFL6B77", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFM0D46", "filial": "PR - Carambei (Frisia)"}, {"placa": "SFN0C72", "filial": "PR - Carambei (Frisia)"}, {"placa": "TAM2D56", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAM6I33", "filial": "MG - Sacramento (Nutrição Granel - Scala)"}, {"placa": "TAN7D19", "filial": "RS - Carazinho"}, {"placa": "TAN7D20", "filial": "PR - Juvinopolis"}, {"placa": "TAN7D23", "filial": "MG - Salitre (Leite Scala)"}, {"placa": "TAN7D25", "filial": "PR - Juvinopolis"}, {"placa": "SDQ9I24", "filial": "PR - Castro (Castrolanda)"}, {"placa": "SDR8A45", "filial": "PR - Carambei (Frisia)"}, {"placa": "SDS7C04", "filial": "RS - Carazinho"}, {"placa": "TTJ7F25", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "TTJ9A66", "filial": "RS - Catuípe"}, {"placa": "TTK7C50", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "TTL8F58", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TTL8F59", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "TTT5B66", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "TUE1H37", "filial": "RS - Almirante Tamandaré do Sul"}, {"placa": "SR035065", "filial": "Garagem Padrão"}, {"placa": "TTQ6D22", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "TTP7F80", "filial": "PR - Juvinopolis"}, {"placa": "TTP7F83", "filial": "PR - Juvinopolis"}, {"placa": "TTP8B65", "filial": "PR - Juvinopolis"}, {"placa": "TTQ6D24", "filial": "Garagem Padrão"}, {"placa": "TTT5B65", "filial": "PR - Juvinopolis"}, {"placa": "TUU2C71", "filial": "MG - Sacramento (Leite Scala)"}, {"placa": "RHW9D12", "filial": "PR - Jaguariaiva"}, {"placa": "RHW9D13", "filial": "PR - Jaguariaiva"}, {"placa": "SDZ5C09", "filial": "PR - Jaguariaiva"}, {"placa": "SEA4C51", "filial": "PR - Jaguariaiva"}, {"placa": "SEB7B18", "filial": "PR - Jaguariaiva"}, {"placa": "SEB7B20", "filial": "PR - Jaguariaiva"}, {"placa": "SED3B06", "filial": "PR - Jaguariaiva"}],
-  telematix: [{"placa": "RHE5H74", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "TBA0F52", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA0F59", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TBA0F63", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TBA0F53", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBK5B17", "filial": "Goias - Goiania (CCPR)"}, {"placa": "TBO2A40", "filial": "Minas - Unaí (CCPR)"}, {"placa": "TBO2A32", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TBO2A45", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TBO2A18", "filial": "Sao Paulo - Santo Antônio do Aracanguá (Lactalis)"}, {"placa": "TUK2C84", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "QPU7J87", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "ODM6J63", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "TUV2E20", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TTP8B63", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "TTP8B64", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "TTQ6D23", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TXK6A98", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TTS5F09", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "RCN4J88", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TBA0F57", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "AFR9G30", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "AUJ8I07", "filial": "X - Decommissioned"}, {"placa": "BBO2E28", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BBY4I43", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "BCM6F72", "filial": "X - Decommissioned"}, {"placa": "BCM6428", "filial": "X - Decommissioned"}, {"placa": "BCM6573", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "BCP8B07", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BCQ5B17", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "BCR2H92", "filial": "Sao Paulo - Araras"}, {"placa": "BCV3F49", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BDC5E90", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "BDC9B26", "filial": "X - Decommissioned"}, {"placa": "BDD9C66", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "BDI6G39", "filial": "Minas - Teófilo Otoni (DAMARE)"}, {"placa": "BDK4A32", "filial": "X - Decommissioned"}, {"placa": "BDK4A94", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BDN1G60", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "BED9F21", "filial": "X - Decommissioned"}, {"placa": "BEE3G05", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BEE4F81", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "BEF3A85", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "BEF3A88", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "BEF7E85", "filial": "Sao Paulo - Araras"}, {"placa": "BEF9B58", "filial": "Sao Paulo - Araras"}, {"placa": "BEI6I75", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "BEI6I76", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "BEJ1H93", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "BEJ1H94", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "BEJ2G54", "filial": "GARAGEM VIA LÁCTEOS"}, {"placa": "BEJ2H56", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "BEK9E65", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "BEX5E01", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "DPA0G12", "filial": "X - Decommissioned"}, {"placa": "DPF3B76", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "ETZ0G07", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "FEJ5I74", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "GYI9H52", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "HGI3485", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "HHI8A20", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "HNY2A90", "filial": "Minas - Uberlandia (Polenghi)"}, {"placa": "HOA1A20", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "865413059095553", "filial": "Jardinox"}, {"placa": "863238071170759", "filial": "Jardinox"}, {"placa": "Teste 3-TTE7I80", "filial": "Jardinox"}, {"placa": "Teste 4-TTN0I27", "filial": "Jardinox"}, {"placa": "Teste 5-SCN3C30", "filial": "Jardinox"}, {"placa": "Teste 6-NWQ3957", "filial": "Jardinox"}, {"placa": "MJL1444", "filial": "Minas - Santa Vitoria (Piracanjuba)"}, {"placa": "MJV6C40", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "NKP9F40", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "NLU0587", "filial": "Goias - Goiania (CCPR)"}, {"placa": "NYB9867", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "OGS4J52", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "OLX2G97", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "NFZ0601", "filial": "Minas - Unaí (CCPR)"}, {"placa": "SEW5H11", "filial": "Norte - Nossa Senhora da Glória"}, {"placa": "TXF3E70", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "PPJ0D66", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "PQF6H98", "filial": "Goias - Goiania (CCPR)"}, {"placa": "PRG0D47", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "PRR4J43", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "PXS0C58", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "PYW9C85", "filial": "Minas - Unaí (CCPR)"}, {"placa": "PZD9B04", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "QHF0I88", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "QHG0053", "filial": "Minas - Santa Vitoria (Piracanjuba)"}, {"placa": "QNW7G76", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "QTS9984", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "RBT3D16", "filial": "Goias - Goiania (CCPR)"}, {"placa": "RCB6B44", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "RHC9G31", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "RHC9G32", "filial": "Rio de Janeiro - Três Rios - Piracanjuba"}, {"placa": "RHC9G33", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "RHD4A18", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "RHD4A23", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "RHE0C42", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "RHE0H71", "filial": "GARAGEM VIA LÁCTEOS"}, {"placa": "RHE0H73", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "RHE5H76", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "RHF7H23", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "RHG7A79", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "RHG7A98", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "RHG7A99", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "RHG7B01", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "RHH1A84", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "RHH8E22", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "RHH8E23", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "RHV6E15", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "RHV6E16", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "RHW8A39", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "RHX3H29", "filial": "Sao Paulo - Araras"}, {"placa": "RHY0H53", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "RHY4B24", "filial": "Minas - Unaí (CCPR)"}, {"placa": "RHY5B79", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "RHY6C98", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "RHY8C72", "filial": "GARAGEM VIA LÁCTEOS"}, {"placa": "RHZ6G09", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "RHZ8F32", "filial": "Sul - Verê (Nutrição Animal)"}, {"placa": "RMF5I41", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "RML9G93", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "RPZ9A66", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "RQN1B43", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "RVV4D36", "filial": "CARNEIRO ARAUJO TRANSPORTES"}, {"placa": "SCA2C22", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "SCO3B56", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "SCP6J67", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SDP9E79", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "SDQ3F96", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "SDQ3F98", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SDQ5F90", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "SDQ6J27", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "SDQ6J28", "filial": "X - Decommissioned"}, {"placa": "SDQ9H06", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SDR0F96", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDR4G68", "filial": "Minas - Unaí (CCPR)"}, {"placa": "SDR6F73", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "SDR7F14", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "SDR8F40", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "SDS2J37", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "SDS5H23", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDS6G71", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDS6G72", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDS7B93", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "SDS7C24", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "SDS8H05", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDS8H07", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDS9H28", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SDT2J47", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "SDT5G81", "filial": "Minas - Unaí (CCPR)"}, {"placa": "SDT9B29", "filial": "Goias - Goiania (CCPR)"}, {"placa": "SDV0E51", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "SDV2I40", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "SDV3C73", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "SDV5D14", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "SDV6C37", "filial": "GARAGEM VIA LÁCTEOS"}, {"placa": "SDV6F85", "filial": "Minas - Contagem (Nutrição Animal)"}, {"placa": "SDV6J29", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "SDV9D84", "filial": "Minas - T2 GOVERNADOR VALDARES (LEITE NORTE)"}, {"placa": "SDX2H31", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SDY4H48", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "SDY4H50", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "SDY4H51", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "SDZ9J31", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SEC0D70", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "SED6J16", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "SEG8E79", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "SHC6E89", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "SHC8J13", "filial": "CARNEIRO ARAUJO TRANSPORTES"}, {"placa": "SHP4J85", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "SKK2E40", "filial": "Sao Paulo - Araras"}, {"placa": "SKK9C28", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "SKL0I16", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "SKL2I77", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "SKL3G33", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SKL6A93", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "SKL4D64", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "SKM2B92", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SKM3E19", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "SKM5H90", "filial": "Minas - Santa Vitoria (Piracanjuba)"}, {"placa": "SKM6J86", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "SKM7A66", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "SKM8G40", "filial": "Minas - Unaí (CCPR)"}, {"placa": "SKM8J82", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "SKM9E42", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "SKN7J99", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "SYC9F58", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "SYI9C58", "filial": "Norte - Nossa Senhora da Glória"}, {"placa": "TAN7D21", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "TAO6E41", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TAO6E42", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TAO6E60", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "TAO6E61", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TAO6E63", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAO7B34", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TAO7B35", "filial": "Rio de Janeiro - Barra Mansa (Lactalis)"}, {"placa": "TAO7B36", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TAP2G35", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TAP2G43", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "TAP2G46", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "TAP2G48", "filial": "Minas - Santa Vitoria (Piracanjuba)"}, {"placa": "TAP2G52", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "TAP2G55", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "TAP2G59", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "TAP2G62", "filial": "X - Decommissioned"}, {"placa": "TAR5B63", "filial": "Rio de Janeiro - Três Rios - Piracanjuba"}, {"placa": "TAR5I40", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAR5I41", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAR5I42", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAS2G13", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TAS2G15", "filial": "Rio de Janeiro - Três Rios - Piracanjuba"}, {"placa": "TAS2G18", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TAS2G20", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TAS2G21", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TAS3A58", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAS3A61", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAS3A63", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAS3A64", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAS3A68", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAT0F86", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TAT0F90", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "TAT0I87", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TAU8B77", "filial": "Rio de Janeiro - Três Rios - Piracanjuba"}, {"placa": "TAU8B79", "filial": "Rio de Janeiro - Três Rios - Piracanjuba"}, {"placa": "TAU8B80", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TBA0F54", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA0F56", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA0F61", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA0F64", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA0F65", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBA5I48", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TBI6B98", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "TBI6B99", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "TBI6C04", "filial": "Goias - Corumbaiba (Italac)"}, {"placa": "TBI6C05", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "TBI6C06", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "TBI6C07", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TBK5B03", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TBK5B05", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBK5B06", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBK5B09", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TBK5B10", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TBK5B12", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TBO2A21", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBO2A24", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "TBO2A28", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "TBO2A29", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "TBO2A34", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TBO2A35", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "TBO2A37", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TBO2A44", "filial": "Minas - Unaí (CCPR)"}, {"placa": "TBO2A48", "filial": "Minas - Unaí (CCPR)"}, {"placa": "TBO2A49", "filial": "Minas - Boa Esperança (Danone)"}, {"placa": "TCF5D60", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TCN8C12", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "TCO9D46", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "TDN8E67", "filial": "Rio de Janeiro - Barra Mansa (Lactalis)"}, {"placa": "TEA3I44", "filial": "Minas - Curvelo (Piracanjuba)"}, {"placa": "TED4J24", "filial": "Minas - T2 UBERLÂNDIA"}, {"placa": "TED6E87", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "TFA5G49", "filial": "Goias - Goiania (CCPR)"}, {"placa": "TTA2F32", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "TTE9J87", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TTG9H87", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TTH9G87", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TTI4I00", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "TTL6G34", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TTL8F65", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TTM8E91", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "TTM8E92", "filial": "Minas - Uberlandia (CCPR)"}, {"placa": "TTM8E95", "filial": "Sao Paulo - Araras"}, {"placa": "TTN4G17", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TTO0I42", "filial": "Minas - Santa Vitoria (Piracanjuba)"}, {"placa": "TTO4B68", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TTO4B69", "filial": "Minas - Pompeu (Itambe)"}, {"placa": "TTP7F78", "filial": "Sao Paulo - Araras"}, {"placa": "TTQ1D25", "filial": "Minas - Para de Minas (CCPR)"}, {"placa": "TTQ4D08", "filial": "Minas - Unai (Piracanjuba) - Via Lacteos"}, {"placa": "TTQ4D09", "filial": "Norte - Nossa Senhora da Glória"}, {"placa": "TTY1F54", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "RHC9G36", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "BEE4F80", "filial": "Norte - Bom Conselho (Lactalis)"}, {"placa": "SDS2J26", "filial": "Minas - Lavras (Verde Campo)"}, {"placa": "BCM7G87", "filial": "Minas - Governador Valadares - Piracanjuba"}, {"placa": "SDS0J23", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "IWK2H23", "filial": "Minas - Campina Verde Cliente (CCPR)"}, {"placa": "QNX6073", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "BEO7J91", "filial": "São Paulo - Araçatuba"}, {"placa": "SEE7D46", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "TUM1G15", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "RHF7H31", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8E01", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "BEQ5J72", "filial": "São Paulo - Araçatuba"}, {"placa": "SEB8E07", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8E09", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8E08", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8E04", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8D99", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEB8E05", "filial": "Sao Paulo - Araras"}, {"placa": "SEB8D97", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEF3E38", "filial": "Minas - Unaí (CCPR)"}, {"placa": "SEF1B32", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "SEF1B89", "filial": "Goias - Palminopolis (Piracanjuba)"}, {"placa": "SEG1C82", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "SEF1B31", "filial": "Minas - Ituiutaba (Nestle)"}, {"placa": "ENI4A58", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "FFU9E59", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "BDJ7G70", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "RHF7H26", "filial": "Minas - Santa Vitoria (Catupiry)"}, {"placa": "BEC0G83", "filial": "São Paulo - Araçatuba"}, {"placa": "SEB8E03", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SEE3A68", "filial": "Minas - Pocos de Caldas (Danone)"}, {"placa": "SEB8E02", "filial": "São Paulo - Araçatuba"}, {"placa": "BCH4A16", "filial": "Goias - Goiania (CCPR)"}, {"placa": "BEQ5J73", "filial": "São Paulo - Araçatuba"}, {"placa": "SDS7B94", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "RHC7C86", "filial": "Goias - Doverlandia (Laticinios Catupiry)"}, {"placa": "FPC2066", "filial": "São Paulo - Araçatuba"}, {"placa": "EBB2I89", "filial": "Sao Paulo - Araraquara (Piracanjuba)"}, {"placa": "TTN4G13", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "TTS5F07", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "TTS5F08", "filial": "Minas - Montes Claros (Nestle)"}, {"placa": "SDR8F41", "filial": "Minas - Ituiutaba (Nestle)"}]
+/* ===========================
+   BASE EMBED (mantém tua base gigante)
+=========================== */
+window.SF_EMBED_BASE = window.SF_EMBED_BASE || {
+  wiki: [],
+  telematix: []
 };
-</script>
 
-<script>
-/**
- * =========================================================
- * DOCUMENTAÇÃO RÁPIDA (como adaptar)
- * =========================================================
- * 1) Persistência:
- *    - Hoje salva em localStorage (SF_CFG.storageKey).
- *    - Para salvar via n8n/webhook:
- *      - Substitua saveDB() para POST e loadDB() para GET (mantendo o formato do DB).
- *
- * 2) Base de Placas:
- *    - Aceita XLSX com colunas:
- *      - "Número de registro" (placa) + "Garagem" (filial)
- *    - Empresa é definida pelo upload: WIKI ou TELEMATIX
- *
- * 3) Estados e Regra de KPI:
- *    - status: 'falha' (vermelho) | 'reportada' (laranja) | 'concluida' (verde)
- *    - % = (reportada + concluida) / (falha + reportada + concluida)
- *
- * 4) Indicador:
- *    - Semanal: semana SEG->DOM
- *    - Mensal: divide o mês em semanas (S1..S4/5) e faz barras empilhadas por status
- */
-
-(function(){
-  // =========================
-  // CONFIG (alterar só aqui)
-  // =========================
-  const SF_CFG = {
-    repoWikiXlsx:  '/data/WIKIPLACAS.xlsx',
-    repoTeleXlsx:  '/data/TELEMATIXPLACAS.xlsx',
-    storageKey: 'VIA_SINAL_FALHA_DB_V1',
+/* ===========================
+   APP SF
+=========================== */
+const SF = (() => {
+  const LS = {
+    base: 'sf_base_v1',
+    state: 'sf_state_v1',
+    hist: 'sf_hist_v1'
   };
 
-  // =========================
-  // Helpers
-  // =========================
-  const byId = (id)=>document.getElementById(id);
-  function nowISO(){
-    const d=new Date(); const p=n=>String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
-  }
-  function dateISO(d){
-    const p=n=>String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
-  }
-  function toBR(iso){
-    if(!iso) return '—';
-    const m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
-  }
-  function normalizePlaca(v){
-    const s=String(v??'').trim();
-    if(!s) return '';
-    const m=s.match(/\(([^)]+)\)/); // Extrav(SDU8I71)
-    const raw=(m&&m[1])?m[1]:s;
-    return raw.replace(/\s+/g,'').toUpperCase();
-  }
-  function safeText(s){ return (s==null)?'':String(s); }
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-  }
-  function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+  // ---- utils
+  const pad2 = n => String(n).padStart(2,'0');
+  const todayISO = () => {
+    const d = new Date();
+    return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  };
+  const fmtBR = (iso) => {
+    if (!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    if (!y || !m || !d) return '—';
+    return `${d}/${m}/${y}`;
+  };
+  const normStr = (s) => String(s ?? '').trim();
+  const normPlate = (s) => normStr(s).toUpperCase();
 
-  function startOfWeekMonday(d){
-    const x=new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const day=x.getDay(); // 0..6
-    const diff=(day===0)?-6:(1-day);
-    x.setDate(x.getDate()+diff);
-    x.setHours(0,0,0,0);
-    return x;
-  }
-  function endOfWeekSunday(d){
-    const s=startOfWeekMonday(d);
-    const e=new Date(s); e.setDate(e.getDate()+6);
-    e.setHours(23,59,59,999);
-    return e;
-  }
-  function weekRangeLabel(d){
-    const s=startOfWeekMonday(d), e=endOfWeekSunday(d);
-    return `${toBR(dateISO(s))} → ${toBR(dateISO(e))}`;
-  }
-  function monthKey(d){
-    const p=n=>String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${p(d.getMonth()+1)}`;
-  }
+  // >>> FIX CRÍTICO: localStorage às vezes fica "null" (string JSON), e isso quebrava state/hist/base
+  const safeJSON = (s, fallback) => {
+    try {
+      const v = JSON.parse(s);
+      return (v === null || v === undefined) ? fallback : v;
+    } catch {
+      return fallback;
+    }
+  };
+  const ensureObj = (v) => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+  const ensureArr = (v) => Array.isArray(v) ? v : [];
 
-  // =========================
-  // Lib loaders (XLSX / Chart.js)
-  // =========================
-  function loadScriptOnce(src){
-    return new Promise((resolve,reject)=>{
-      if(Array.from(document.scripts).some(s=>s.src===src)) return resolve();
-      const sc=document.createElement('script');
-      sc.src=src;
-      sc.onload=()=>resolve();
-      sc.onerror=()=>reject(new Error('Falha ao carregar lib: '+src));
-      document.head.appendChild(sc);
-    });
-  }
-  async function ensureXLSX(){
-    if(window.XLSX) return;
-    await loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
-  }
-  async function ensureChart(){
-    if(window.Chart) return;
-    await loadScriptOnce('https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js');
-  }
+  const hasXLSX = () => !!(window.XLSX && typeof window.XLSX.read === 'function');
 
-  // =========================
-  // DB (localStorage)
-  // =========================
-  function defaultDB(){
+  const loadBase = () => {
+    const saved = safeJSON(localStorage.getItem(LS.base), null);
+    if (saved && typeof saved === 'object') {
+      return {
+        wiki: Array.isArray(saved.wiki) ? saved.wiki : [],
+        telematix: Array.isArray(saved.telematix) ? saved.telematix : []
+      };
+    }
     return {
-      version: 1,
-      updatedAt: nowISO(),
-      base: {
-        wiki: { loadedAt: null, rows: [] },
-        tele: { loadedAt: null, rows: [] },
-      },
-      incidents: [],
-      history: [],
+      wiki: Array.isArray(window.SF_EMBED_BASE.wiki) ? window.SF_EMBED_BASE.wiki : [],
+      telematix: Array.isArray(window.SF_EMBED_BASE.telematix) ? window.SF_EMBED_BASE.telematix : []
     };
-  }
-  function loadDB(){
-    try{
-      const raw=localStorage.getItem(SF_CFG.storageKey);
-      if(!raw) return defaultDB();
-      return Object.assign(defaultDB(), JSON.parse(raw));
-    }catch{ return defaultDB(); }
-  }
-  function saveDB(db){
-    db.updatedAt=nowISO();
-    localStorage.setItem(SF_CFG.storageKey, JSON.stringify(db));
-  }
+  };
 
-  let DB = loadDB();
-  let BASE = [];
-  let MODE = 'weekly';
-  let CURRENT_WEEK_DATE = new Date();
-  let CURRENT_MONTH = monthKey(new Date());
-  let weeklyChart=null, monthlyChart=null;
+  const saveBase = (base) => localStorage.setItem(LS.base, JSON.stringify(base));
+  const loadState = () => ensureObj(safeJSON(localStorage.getItem(LS.state), {}));
+  const saveState = (st) => localStorage.setItem(LS.state, JSON.stringify(st));
+  const loadHist = () => ensureArr(safeJSON(localStorage.getItem(LS.hist), []));
+  const saveHist = (h) => localStorage.setItem(LS.hist, JSON.stringify(h));
 
-  // =========================
-  // Base rebuild
-  // =========================
-  function rebuildBase(){
-    const wiki=(DB.base.wiki.rows||[]).map(r=>({...r, empresa:'WIKI'}));
-    const tele=(DB.base.tele.rows||[]).map(r=>({...r, empresa:'TELEMATIX'}));
-
-    BASE=[...wiki,...tele].map(r=>({
-      placa: normalizePlaca(r.placa),
-      filial: safeText(r.filial).trim(),
-      empresa: r.empresa,
-    })).filter(r=>r.placa && r.filial && r.empresa);
-
-    // dedup
-    const seen=new Set();
-    BASE=BASE.filter(x=>{
-      const k=`${x.placa}||${x.filial}||${x.empresa}`;
-      if(seen.has(k)) return false;
-      seen.add(k); return true;
-    });
-
-    // status header
-    const st=byId('sfBaseStatus');
-    if(st){
-      const w=DB.base.wiki.loadedAt?`WIKI: ${toBR(DB.base.wiki.loadedAt)}`:'WIKI: —';
-      const t=DB.base.tele.loadedAt?`TELEMATIX: ${toBR(DB.base.tele.loadedAt)}`:'TELEMATIX: —';
-      st.textContent=`${w} • ${t} • Total: ${BASE.length}`;
+  const uniqBy = (arr, keyFn) => {
+    const seen = new Set();
+    const out = [];
+    for (const it of arr) {
+      const k = keyFn(it);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(it);
     }
+    return out;
+  };
 
-    // filiais
-    const sel=byId('sfFilterFilial');
-    if(sel){
-      const cur=sel.value||'ALL';
-      const filiais=Array.from(new Set(BASE.map(r=>r.filial))).sort((a,b)=>a.localeCompare(b,'pt-BR'));
-      sel.innerHTML=`<option value="ALL">Todas</option>` + filiais.map(f=>`<option value="${escapeAttr(f)}">${escapeHtml(f)}</option>`).join('');
-      sel.value = filiais.includes(cur) ? cur : 'ALL';
+  const mergeBaseToRows = (base) => {
+    const rows = [];
+    for (const it of (base.wiki || [])) {
+      rows.push({ placa: normPlate(it.placa), filial: normStr(it.filial), empresa: 'WIKI' });
     }
+    for (const it of (base.telematix || [])) {
+      rows.push({ placa: normPlate(it.placa), filial: normStr(it.filial), empresa: 'TELEMATIX' });
+    }
+    return uniqBy(rows.filter(r => r.placa), r => r.empresa + '|' + r.placa);
+  };
 
-    renderPlacasTable();
-    renderHistorico();
-    renderIndicator();
-  }
+  const statusPillHTML = (status) => {
+    if (status === 'falha') return `<span class="sf-pill red"><span class="dot"></span>Falha</span>`;
+    if (status === 'reportada') return `<span class="sf-pill orange"><span class="dot"></span>Reportada</span>`;
+    if (status === 'concluida') return `<span class="sf-pill green"><span class="dot"></span>Resolvida</span>`;
+    return `<span class="sf-pill"><span class="dot"></span>OK</span>`;
+  };
 
-  // =========================
-  // Incidents CRUD
-  // =========================
-  function newId(){ return 'sf_'+Math.random().toString(16).slice(2)+'_'+Date.now().toString(16); }
-  function addHistory(evt){
-    DB.history.unshift(evt);
-    DB.history = DB.history.slice(0, 2000);
-  }
-  function getActiveIncident(placa){
-    const list=DB.incidents.filter(i=>i.placa===placa && !i.endDate);
-    if(!list.length) return null;
-    list.sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
-    return list[0];
-  }
-  function upsertIncident(inc){
-    const idx=DB.incidents.findIndex(x=>x.id===inc.id);
-    if(idx>=0) DB.incidents[idx]=inc; else DB.incidents.push(inc);
-  }
-  function removeIncident(id){ DB.incidents = DB.incidents.filter(x=>x.id!==id); }
+  const monthNames = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
-  // =========================
-  // Placas table render
-  // =========================
-  function applyFiltersToBase(){
-    const emp=byId('sfFilterEmpresa')?.value || 'ALL';
-    const fil=byId('sfFilterFilial')?.value || 'ALL';
-    const q=normalizePlaca(byId('sfFilterPlaca')?.value || '');
+  // Semanas do mês por faixa fixa
+  const getWeekRangesInMonth = (year, month1to12) => {
+    const lastDay = new Date(year, month1to12, 0).getDate();
+    const ranges = [];
+    const cuts = [
+      { label:'S1', s:1, e:Math.min(7,lastDay) },
+      { label:'S2', s:8, e:Math.min(14,lastDay) },
+      { label:'S3', s:15, e:Math.min(21,lastDay) },
+      { label:'S4', s:22, e:Math.min(28,lastDay) }
+    ];
+    for (const c of cuts) if (c.s <= lastDay) ranges.push(c);
+    if (lastDay >= 29) ranges.push({ label:'S5', s:29, e:lastDay });
+    return ranges;
+  };
 
-    return BASE.filter(r=>{
-      if(emp!=='ALL' && r.empresa!==emp) return false;
-      if(fil!=='ALL' && r.filial!==fil) return false;
-      if(q && !r.placa.includes(q)) return false;
+  const isoFromYMD = (y,m1,d) => `${y}-${pad2(m1)}-${pad2(d)}`;
+
+  // placas "ativas no período" (sobreposição de intervalo)
+  const isActiveInRange = (stRow, startISO, endISO) => {
+    const ini = stRow?.inicio || null;
+    const fim = stRow?.fim || null;
+    if (!ini) return false;
+    if (ini > endISO) return false;
+    if (fim && fim < startISO) return false;
+    return true;
+  };
+
+  // UI refs
+  const el = {
+    segBtns: () => document.querySelectorAll('.sf-seg-btn'),
+    views: {
+      placas: document.getElementById('sfViewPlacas'),
+      historico: document.getElementById('sfViewHistorico')
+    },
+    baseStatus: document.getElementById('sfBaseStatus'),
+    listMeta: document.getElementById('sfListMeta'),
+    tbodyPlacas: document.getElementById('sfPlacasTbody'),
+
+    filterEmpresa: document.getElementById('sfFilterEmpresa'),
+    filterFilial: document.getElementById('sfFilterFilial'),
+    filterPlaca: document.getElementById('sfFilterPlaca'),
+    btnClearFilters: document.getElementById('sfBtnClearFilters'),
+
+    btnLoadRepo: document.getElementById('sfBtnLoadRepo'),
+    fileWiki: document.getElementById('sfFileWiki'),
+    fileTele: document.getElementById('sfFileTele'),
+
+    histStatus: document.getElementById('sfHistStatus'),
+    histPlaca: document.getElementById('sfHistPlaca'),
+    btnClearHist: document.getElementById('sfBtnClearHist'),
+    btnExportHist: document.getElementById('sfBtnExportHist'),
+    histMeta: document.getElementById('sfHistMeta'),
+    histTbody: document.getElementById('sfHistTbody'),
+
+    // modal
+    modal: document.getElementById('sfModal'),
+    modalTitle: document.getElementById('sfModalTitle'),
+    modalSub: document.getElementById('sfModalSub'),
+    modalStatus: document.getElementById('sfModalStatus'),
+    modalInicio: document.getElementById('sfModalInicio'),
+    modalFim: document.getElementById('sfModalFim'),
+    inputInicio: document.getElementById('sfInputInicio'),
+    inputFim: document.getElementById('sfInputFim'),
+    btnAddFalha: document.getElementById('sfBtnAddFalha'),
+    btnReportar: document.getElementById('sfBtnReportar'),
+    btnConcluir: document.getElementById('sfBtnConcluir'),
+    btnRemover: document.getElementById('sfBtnRemover'),
+    modalErr: document.getElementById('sfModalErr'),
+
+    // indicador
+    indicatorPanel: document.getElementById('sfIndicatorPanel'),
+    btnFull: document.getElementById('sfBtnFull'),
+    btnFullClose: document.getElementById('sfBtnFullClose'),
+    toggleBtns: () => document.querySelectorAll('.sf-toggle-btn'),
+    monthPick: document.getElementById('sfMonthPick'),
+    weekPick: document.getElementById('sfWeekPick'),
+    monthWrap: document.getElementById('sfMonthWrap'),
+    weekWrap: document.getElementById('sfWeekWrap'),
+
+    indRange: document.getElementById('sfIndRange'),
+    chartTitle: document.getElementById('sfChartTitle'),
+    chartHint: document.getElementById('sfChartHint'),
+    weeklyWrap: document.getElementById('sfWeeklyWrap'),
+    monthlyWrap: document.getElementById('sfMonthlyWrap'),
+    weeklyCanvas: document.getElementById('sfWeeklyChart'),
+    monthlyCanvas: document.getElementById('sfMonthlyChart'),
+
+    pctValue: document.getElementById('sfPctValue'),
+    pctSub: document.getElementById('sfPctSub'),
+    pctFill: document.getElementById('sfPctFill'),
+    cntFalha: document.getElementById('sfCntFalha'),
+    cntReport: document.getElementById('sfCntReport'),
+    cntConcl: document.getElementById('sfCntConcl'),
+
+    badgeFalha: document.getElementById('sfBadgeFalha'),
+    badgeReport: document.getElementById('sfBadgeReport'),
+    badgeConcl: document.getElementById('sfBadgeConcl'),
+    listFalha: document.getElementById('sfListFalha'),
+    listReport: document.getElementById('sfListReport'),
+    listConcl: document.getElementById('sfListConcl'),
+  };
+
+  let base = loadBase();
+  let state = loadState();
+  let hist = loadHist();
+
+  let currentModalKey = null;
+  let currentMode = 'weekly';
+  let weeklyChart = null;
+  let monthlyChart = null;
+  let indicatorFull = false;
+
+  const refreshMemory = () => { base = loadBase(); state = loadState(); hist = loadHist(); };
+
+  const setView = (view) => {
+    el.views.placas.classList.toggle('active', view === 'placas');
+    el.views.historico.classList.toggle('active', view === 'historico');
+    el.segBtns().forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  };
+
+  const buildFiliais = (rows, empresaFilter) => {
+    const filSet = new Set();
+    for (const r of rows) {
+      if (empresaFilter !== 'ALL' && r.empresa !== empresaFilter) continue;
+      if (r.filial) filSet.add(r.filial);
+    }
+    return Array.from(filSet).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  };
+
+  const applyFilters = (rows) => {
+    const emp = el.filterEmpresa.value;
+    const fil = el.filterFilial.value;
+    const q = normPlate(el.filterPlaca.value || '');
+
+    return rows.filter(r => {
+      if (emp !== 'ALL' && r.empresa !== emp) return false;
+      if (fil !== 'ALL' && r.filial !== fil) return false;
+      if (q && !r.placa.includes(q)) return false;
       return true;
     });
-  }
-  function rowStatusBadge(placa){
-    const inc=getActiveIncident(placa);
-    if(!inc) return { html:`<span class="sf-pill"><span class="dot"></span>Sem falha</span>`, inicio:'—', fim:'—' };
-    const inicio=toBR(inc.startDate);
-    const fim=inc.endDate?toBR(inc.endDate):'—';
-    if(inc.status==='reportada') return { html:`<span class="sf-pill orange"><span class="dot"></span>Falha reportada</span>`, inicio, fim };
-    if(inc.status==='concluida') return { html:`<span class="sf-pill green"><span class="dot"></span>Resolvido</span>`, inicio, fim };
-    return { html:`<span class="sf-pill red"><span class="dot"></span>Falha de sinal</span>`, inicio, fim };
-  }
-  function renderPlacasTable(){
-    const tb=byId('sfPlacasTbody'), meta=byId('sfListMeta');
-    if(!tb || !meta) return;
-    const list=applyFiltersToBase();
-    meta.textContent=`${list.length} placa(s)`;
+  };
 
-    tb.innerHTML=list.map(r=>{
-      const st=rowStatusBadge(r.placa);
+  const renderFilters = () => {
+    const rows = mergeBaseToRows(base);
+    const emp = el.filterEmpresa.value || 'ALL';
+
+    const filiais = buildFiliais(rows, emp);
+    const current = el.filterFilial.value || 'ALL';
+
+    el.filterFilial.innerHTML = `<option value="ALL">Todas</option>` + filiais.map(f => `<option value="${escapeAttr(f)}">${escapeHtml(f)}</option>`).join('');
+    if (filiais.includes(current)) el.filterFilial.value = current;
+    else el.filterFilial.value = 'ALL';
+  };
+
+  const renderPlacas = () => {
+    refreshMemory();
+    const rowsAll = mergeBaseToRows(base);
+    renderFilters();
+
+    const rows = applyFilters(rowsAll);
+    el.baseStatus.textContent = `${rowsAll.length} placas carregadas`;
+    el.listMeta.textContent = `${rows.length} exibidas`;
+
+    const tbody = rows.map(r => {
+      const key = r.empresa + '|' + r.placa;
+      const st = state[key] || null;
+      const status = st?.status || null;
+      const ini = st?.inicio || null;
+      const fim = st?.fim || null;
+
       return `
-        <tr class="sf-row" data-placa="${escapeAttr(r.placa)}" data-filial="${escapeAttr(r.filial)}" data-empresa="${escapeAttr(r.empresa)}">
+        <tr class="sf-row" data-key="${escapeAttr(key)}">
           <td><b>${escapeHtml(r.placa)}</b></td>
-          <td>${escapeHtml(r.filial)}</td>
+          <td>${escapeHtml(r.filial || '—')}</td>
           <td>${escapeHtml(r.empresa)}</td>
-          <td>${st.html}</td>
-          <td>${st.inicio}</td>
-          <td>${st.fim}</td>
+          <td>${statusPillHTML(status)}</td>
+          <td>${escapeHtml(fmtBR(ini))}</td>
+          <td>${escapeHtml(fmtBR(fim))}</td>
         </tr>
       `;
     }).join('');
 
-    tb.querySelectorAll('.sf-row').forEach(tr=>{
-      tr.addEventListener('click', ()=>openModal({
-        placa: tr.dataset.placa,
-        filial: tr.dataset.filial,
-        empresa: tr.dataset.empresa,
-      }));
+    el.tbodyPlacas.innerHTML = tbody || `<tr><td colspan="6" style="padding:16px;color:#5b6b8b;">Nenhuma placa encontrada com esses filtros.</td></tr>`;
+
+    el.tbodyPlacas.querySelectorAll('tr[data-key]').forEach(tr => {
+      tr.addEventListener('click', () => openModal(tr.dataset.key));
     });
-  }
 
-  // =========================
-  // Histórico render
-  // =========================
-  function renderHistorico(){
-    const tb=byId('sfHistTbody'), meta=byId('sfHistMeta');
-    if(!tb || !meta) return;
+    renderHistorico();
+    renderIndicator();
+  };
 
-    const st=byId('sfHistStatus')?.value || 'ALL';
-    const q=normalizePlaca(byId('sfHistPlaca')?.value || '');
+  const renderHistorico = () => {
+    refreshMemory();
+    const status = el.histStatus.value;
+    const q = normPlate(el.histPlaca.value || '');
 
-    const list=DB.history.filter(h=>{
-      if(st!=='ALL' && h.status!==st) return false;
-      if(q && !normalizePlaca(h.placa).includes(q)) return false;
+    const rows = (hist || []).slice().sort((a,b)=> (b.ts||0) - (a.ts||0)).filter(h => {
+      if (status !== 'ALL' && h.status !== status) return false;
+      if (q && !String(h.placa||'').toUpperCase().includes(q)) return false;
       return true;
     });
 
-    meta.textContent=`${list.length} registro(s)`;
-    tb.innerHTML=list.map(h=>`
+    el.histMeta.textContent = `${rows.length} registro(s)`;
+    el.histTbody.innerHTML = rows.map(h => `
       <tr>
-        <td>${escapeHtml(h.at||'')}</td>
-        <td><b>${escapeHtml(h.placa||'')}</b></td>
-        <td>${escapeHtml(h.filial||'')}</td>
-        <td>${escapeHtml(h.empresa||'')}</td>
-        <td>${escapeHtml(h.action||'')}</td>
+        <td>${escapeHtml(h.tsText || '—')}</td>
+        <td><b>${escapeHtml(h.placa || '—')}</b></td>
+        <td>${escapeHtml(h.filial || '—')}</td>
+        <td>${escapeHtml(h.empresa || '—')}</td>
+        <td>${escapeHtml(labelAcao(h.status))}</td>
       </tr>
-    `).join('');
-  }
+    `).join('') || `<tr><td colspan="5" style="padding:16px;color:#5b6b8b;">Sem registros.</td></tr>`;
+  };
 
-  // =========================
-  // Modal
-  // =========================
-  let modalCtx=null;
-  function modalError(msg){
-    const box=byId('sfModalErr');
-    if(!box) return;
-    box.style.display = msg ? 'block' : 'none';
-    box.textContent = msg || '';
-  }
-  function openModal(ctx){
-    modalCtx=ctx; modalError('');
-    const m=byId('sfModal'); if(!m) return;
+  const labelAcao = (st) => {
+    if (st === 'falha') return 'Adicionar falha';
+    if (st === 'reportada') return 'Marcar reportada';
+    if (st === 'concluida') return 'Concluir';
+    if (st === 'removida') return 'Remover';
+    return '—';
+  };
 
-    const inc=getActiveIncident(ctx.placa);
+  const openModal = (key) => {
+    refreshMemory();
+    currentModalKey = key;
 
-    byId('sfModalTitle').textContent = ctx.placa;
-    byId('sfModalSub').textContent = `${ctx.empresa} • ${ctx.filial}`;
+    const [empresa, placa] = key.split('|');
+    const rowsAll = mergeBaseToRows(base);
+    const row = rowsAll.find(r => (r.empresa + '|' + r.placa) === key) || { empresa, placa, filial:'' };
+    const st = state[key] || { status:null, inicio:null, fim:null };
 
-    const statusEl=byId('sfModalStatus');
-    const inicioEl=byId('sfModalInicio');
-    const fimEl=byId('sfModalFim');
+    el.modalTitle.textContent = row.placa;
+    el.modalSub.textContent = `${row.empresa} • ${row.filial || '—'}`;
+    el.modalStatus.textContent = st.status ? labelAcao(st.status) : 'Sem falha';
+    el.modalInicio.textContent = fmtBR(st.inicio);
+    el.modalFim.textContent = fmtBR(st.fim);
 
-    const inputInicio=byId('sfInputInicio');
-    const inputFim=byId('sfInputFim');
+    el.inputInicio.value = st.inicio || '';
+    el.inputFim.value = st.fim || '';
 
-    const fieldInicio=byId('sfFieldInicio');
-    const fieldFim=byId('sfFieldFim');
+    hideModalErr();
+    el.modal.classList.add('show');
+    el.modal.setAttribute('aria-hidden','false');
+  };
 
-    if(inc){
-      const label = inc.status==='reportada'?'Falha reportada':inc.status==='concluida'?'Resolvido':'Falha de sinal';
-      statusEl.textContent=label;
-      inicioEl.textContent=toBR(inc.startDate);
-      fimEl.textContent=inc.endDate?toBR(inc.endDate):'—';
+  const closeModal = () => {
+    currentModalKey = null;
+    hideModalErr();
+    el.modal.classList.remove('show');
+    el.modal.setAttribute('aria-hidden','true');
+  };
 
-      inputInicio.value=inc.startDate||'';
-      inputFim.value='';
+  const showModalErr = (msg) => {
+    el.modalErr.textContent = msg;
+    el.modalErr.style.display = 'block';
+  };
+  const hideModalErr = () => {
+    el.modalErr.textContent = '';
+    el.modalErr.style.display = 'none';
+  };
 
-      byId('sfBtnAddFalha').style.display='none';
-      byId('sfBtnReportar').style.display = (inc.status==='falha') ? '' : 'none';
-      byId('sfBtnConcluir').style.display='';
-      byId('sfBtnRemover').style.display='';
+  const pushHist = ({ placa, filial, empresa, status }) => {
+    const d = new Date();
+    const ts = d.getTime();
+    const tsText = `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    hist = loadHist();
+    hist.push({ ts, tsText, placa, filial, empresa, status });
+    saveHist(hist);
+  };
 
-      fieldInicio.style.display = (inc.status==='falha') ? '' : 'none';
-      fieldFim.style.display='';
-    }else{
-      statusEl.textContent='Sem falha';
-      inicioEl.textContent='—';
-      fimEl.textContent='—';
+  const updateState = (key, next) => {
+    state = loadState();
+    if (next === null) delete state[key];
+    else state[key] = next;
+    saveState(state);
+  };
 
-      inputInicio.value=dateISO(new Date());
-      inputFim.value='';
+  const doAction = (type) => {
+    hideModalErr();
+    if (!currentModalKey) return;
 
-      byId('sfBtnAddFalha').style.display='';
-      byId('sfBtnReportar').style.display='none';
-      byId('sfBtnConcluir').style.display='none';
-      byId('sfBtnRemover').style.display='none';
+    refreshMemory();
+    const key = currentModalKey;
+    const [empresa, placa] = key.split('|');
+    const rowsAll = mergeBaseToRows(base);
+    const row = rowsAll.find(r => (r.empresa + '|' + r.placa) === key) || { empresa, placa, filial:'' };
+    const cur = state[key] || { status:null, inicio:null, fim:null, report:null };
 
-      fieldInicio.style.display='';
-      fieldFim.style.display='none';
-    }
 
-    m.style.display='';
-    m.setAttribute('aria-hidden','false');
-  }
-  function closeModal(){
-    const m=byId('sfModal'); if(!m) return;
-    m.style.display='none';
-    m.setAttribute('aria-hidden','true');
-    modalCtx=null;
-  }
+    const inicioIn = el.inputInicio.value || null;
+    const fimIn = el.inputFim.value || null;
 
-  function wireModal(){
-    const m=byId('sfModal'); if(!m) return;
-    m.querySelectorAll('[data-close="1"]').forEach(el=>el.addEventListener('click', closeModal));
+    const commit = (newState, histStatus) => {
+     const same =
+  (cur?.status || null) === (newState?.status || null) &&
+  (cur?.inicio || null) === (newState?.inicio || null) &&
+  (cur?.fim || null) === (newState?.fim || null) &&
+  (cur?.report || null) === (newState?.report || null);
 
-    byId('sfBtnAddFalha')?.addEventListener('click', ()=>{
-      if(!modalCtx) return; modalError('');
-      const inicio=(byId('sfInputInicio')?.value||'').trim();
-      if(!inicio) return modalError('Informe a data de início.');
 
-      const inc={
-        id:newId(),
-        placa: modalCtx.placa,
-        filial: modalCtx.filial,
-        empresa: modalCtx.empresa,
-        status:'falha',
-        startDate: inicio,
-        reportAt:null,
-        endDate:null,
-        updatedAt: nowISO(),
-      };
+      if (same) {
+        showModalErr('Nada mudou (evita duplicar o histórico).');
+        return;
+      }
 
-      upsertIncident(inc);
-      addHistory({ at: nowISO(), placa: inc.placa, filial: inc.filial, empresa: inc.empresa, action:'Adicionada Falha de sinal', status:'falha' });
+      updateState(key, newState);
+      pushHist({ placa: row.placa, filial: row.filial, empresa: row.empresa, status: histStatus });
 
-      saveDB(DB); rebuildBase(); closeModal();
-    });
-
-    byId('sfBtnReportar')?.addEventListener('click', ()=>{
-      if(!modalCtx) return; modalError('');
-      const inc=getActiveIncident(modalCtx.placa);
-      if(!inc) return modalError('Não há falha ativa para reportar.');
-
-      inc.status='reportada';
-      inc.reportAt = inc.reportAt || dateISO(new Date());
-      inc.updatedAt = nowISO();
-
-      upsertIncident(inc);
-      addHistory({ at: nowISO(), placa: inc.placa, filial: inc.filial, empresa: inc.empresa, action:'Marcada como Falha reportada', status:'reportada' });
-
-      saveDB(DB); rebuildBase(); closeModal();
-    });
-
-    byId('sfBtnConcluir')?.addEventListener('click', ()=>{
-      if(!modalCtx) return; modalError('');
-      const inc=getActiveIncident(modalCtx.placa);
-      if(!inc) return modalError('Não há falha ativa para concluir.');
-
-      const fim=(byId('sfInputFim')?.value||'').trim();
-      if(!fim) return modalError('Informe a data de fim.');
-      if(fim < inc.startDate) return modalError('Data de fim não pode ser menor que a data de início.');
-
-      inc.status='concluida';
-      inc.endDate=fim;
-      inc.updatedAt=nowISO();
-
-      upsertIncident(inc);
-      addHistory({ at: nowISO(), placa: inc.placa, filial: inc.filial, empresa: inc.empresa, action:'Concluída (Resolvido)', status:'concluida' });
-
-      saveDB(DB); rebuildBase(); closeModal();
-    });
-
-    byId('sfBtnRemover')?.addEventListener('click', ()=>{
-      if(!modalCtx) return; modalError('');
-      const inc=getActiveIncident(modalCtx.placa);
-      if(!inc) return modalError('Não há falha ativa para remover.');
-
-      removeIncident(inc.id);
-      addHistory({ at: nowISO(), placa: inc.placa, filial: inc.filial, empresa: inc.empresa, action:'Removida (erro de lançamento)', status:'removida' });
-
-      saveDB(DB); rebuildBase(); closeModal();
-    });
-  }
-
-  // =========================
-  // Indicador: cálculo por período
-  // =========================
-  function incidentStatusAtRange(inc, rangeStart, rangeEnd){
-    const s=new Date(inc.startDate+'T00:00:00');
-    const e=inc.endDate ? new Date(inc.endDate+'T23:59:59') : null;
-
-    if(s > rangeEnd) return null;
-    if(e && e < rangeStart) return null;
-
-    // se concluiu dentro do range -> concluida
-    if(inc.endDate){
-      const endD=new Date(inc.endDate+'T12:00:00');
-      if(endD >= rangeStart && endD <= rangeEnd) return 'concluida';
-    }
-    // se reportou até o fim do range -> reportada
-    if(inc.reportAt){
-      const repD=new Date(inc.reportAt+'T12:00:00');
-      if(repD <= rangeEnd) return 'reportada';
-    }
-    return 'falha';
-  }
-
-  function getPlateInfo(placa, filialFallback, empresaFallback){
-    const base=BASE.find(b=>b.placa===placa) || null;
-    return {
-      placa,
-      filial: base?.filial || filialFallback || '—',
-      empresa: base?.empresa || empresaFallback || '—',
+      closeModal();
+      renderPlacas();
+      renderIndicator();
     };
-  }
 
-  function getWeekBuckets(weekDate){
-    const rs=startOfWeekMonday(weekDate);
-    const re=endOfWeekSunday(weekDate);
-    const buckets={ falha:[], reportada:[], concluida:[] };
-
-    for(const inc of DB.incidents){
-      const st=incidentStatusAtRange(inc, rs, re);
-      if(!st) continue;
-      buckets[st].push(getPlateInfo(inc.placa, inc.filial, inc.empresa));
+    if (type === 'falha') {
+      if (!inicioIn) return showModalErr('Informe a data de início.');
+      const newState = { status:'falha', inicio: inicioIn, fim: null, report: null };
+      return commit(newState, 'falha');
     }
-    return { rangeStart: rs, rangeEnd: re, buckets };
-  }
 
-  function getMonthWeeks(monthYYYYMM){
-    const [yy,mm]=monthYYYYMM.split('-').map(Number);
-    const first=new Date(yy, mm-1, 1);
-    const last =new Date(yy, mm, 0);
-
-    let cur=startOfWeekMonday(first);
-    const out=[]; let i=1;
-
-    while(cur <= last){
-      const ws=new Date(cur);
-      const we=endOfWeekSunday(cur);
-      const intersects = !(we < first || ws > last);
-      if(intersects) out.push({ idx:i, start:ws, end:we }), i++;
-      cur.setDate(cur.getDate()+7);
+    if (type === 'reportada') {
+      if (!cur?.inicio) return showModalErr('Essa placa não tem início de falha. Use “Adicionar Falha” primeiro.');
+   const newState = { status:'reportada', inicio: cur.inicio, fim: null, report: cur.report || todayISO() };
+      return commit(newState, 'reportada');
     }
-    return out;
+
+    if (type === 'concluida') {
+      if (!cur?.inicio) return showModalErr('Essa placa não tem início de falha. Use “Adicionar Falha” primeiro.');
+      const fim = fimIn || todayISO();
+      if (fim < cur.inicio) return showModalErr('Data de fim não pode ser menor que a data de início.');
+      const newState = { status:'concluida', inicio: cur.inicio, fim, report: cur.report || null };
+      return commit(newState, 'concluida');
+    }
+
+    if (type === 'remover') {
+      if (!state[key]) return showModalErr('Essa placa não tem falha registrada.');
+      return commit(null, 'removida');
+    }
+  };
+
+  /* ===========================
+     IMPORT robusto (AJUSTE AQUI)
+     - Agora dá feedback (toast)
+     - Aceita XLSX/XLS/CSV
+     - Detecta colunas por nome OU fallback por primeira/segunda coluna
+  ============================ */
+  const findHeaderKey = (keys, cands) => {
+    const lowKeys = keys.map(k => ({ k, l: String(k).toLowerCase().trim() }));
+    for (const cand of cands) {
+      const c = cand.toLowerCase();
+      const hit = lowKeys.find(x => x.l === c || x.l.replace(/\s+/g,'') === c.replace(/\s+/g,''));
+      if (hit) return hit.k;
+    }
+    // contains fallback
+    for (const cand of cands) {
+      const c = cand.toLowerCase();
+      const hit = lowKeys.find(x => x.l.includes(c));
+      if (hit) return hit.k;
+    }
+    return null;
+  };
+
+  const normalizeImportedRows = (rowsRaw) => {
+    const out = [];
+    for (const r of rowsRaw || []) {
+      const placa = normPlate(r.placa);
+      if (!placa) continue;
+      out.push({ placa, filial: normStr(r.filial || '') });
+    }
+    // remove duplicadas por placa, mantendo a primeira que tenha filial
+    const map = new Map();
+    for (const r of out) {
+      const k = r.placa;
+      if (!map.has(k)) map.set(k, r);
+      else {
+        const cur = map.get(k);
+        if (!cur.filial && r.filial) map.set(k, r);
+      }
+    }
+    return Array.from(map.values());
+  };
+
+  const parseCSV = async (file) => {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length);
+    if (!lines.length) return [];
+
+    // tenta detectar delimitador
+    const first = lines[0];
+    const delim = first.includes(';') ? ';' : (first.includes('\t') ? '\t' : ',');
+    const headers = first.split(delim).map(h => h.trim());
+    const keys = headers;
+
+    const kPlaca = findHeaderKey(keys, ['placa','PLACA','plate','numero de registro','número de registro','registro']);
+    const kFilial = findHeaderKey(keys, ['filial','FILIAL','garagem','GARAGEM','planta','PLANTA','base','regional','local']);
+
+    const rows = [];
+    for (let i=1;i<lines.length;i++){
+      const cols = lines[i].split(delim);
+      if (!cols.length) continue;
+
+      const get = (idx) => (idx >= 0 && idx < cols.length) ? cols[idx].trim() : '';
+      const idxPlaca = kPlaca ? headers.indexOf(kPlaca) : -1;
+      const idxFilial = kFilial ? headers.indexOf(kFilial) : -1;
+
+      // fallback: primeira coluna = placa, segunda = filial
+      const placa = normPlate(idxPlaca >= 0 ? get(idxPlaca) : get(0));
+      const filial = normStr(idxFilial >= 0 ? get(idxFilial) : get(1));
+
+      if (!placa) continue;
+      rows.push({ placa, filial });
+    }
+    return normalizeImportedRows(rows);
+  };
+
+  const parseXLSXFile = async (file) => {
+    if (!hasXLSX()) {
+      throw new Error('Biblioteca XLSX não carregou (CDN).');
+    }
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type:'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    if (!ws) return [];
+
+    // 1) tenta JSON (header = primeira linha)
+    const json = XLSX.utils.sheet_to_json(ws, { defval:'', raw:false });
+    if (json && json.length) {
+      const keys = Object.keys(json[0] || {});
+      const kPlaca = findHeaderKey(keys, ['placa','PLACA','plate','numero de registro','número de registro','registro']);
+      const kFilial = findHeaderKey(keys, ['filial','FILIAL','garagem','GARAGEM','planta','PLANTA','base','regional','local']);
+
+      // Se não achou header de placa, faz fallback por A/B (array)
+      if (!kPlaca) {
+        // Fallback: lê como matriz e pega colunas 0 e 1
+        const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval:'' });
+        return parseMatrixFallback(matrix);
+      }
+
+      const rows = [];
+      for (const r of json) {
+        const placa = normPlate(r[kPlaca] ?? r['PLACA'] ?? r['placa']);
+        if (!placa) continue;
+        const filial = normStr(
+          (kFilial ? (r[kFilial]) : '') ??
+          r['FILIAL'] ?? r['filial'] ?? r['GARAGEM'] ?? r['garagem'] ?? r['PLANTA'] ?? r['planta']
+        );
+        rows.push({ placa, filial });
+      }
+      return normalizeImportedRows(rows);
+    }
+
+    // 2) se json veio vazio, fallback matriz
+    const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval:'' });
+    return parseMatrixFallback(matrix);
+  };
+
+  const parseMatrixFallback = (matrix) => {
+    const rows = [];
+    if (!matrix || matrix.length === 0) return rows;
+
+    // remove linhas completamente vazias
+    const m = matrix.filter(row => Array.isArray(row) && row.some(c => String(c ?? '').trim() !== ''));
+    if (!m.length) return rows;
+
+    // tenta achar linha de header que contenha "placa"
+    let headerRowIdx = -1;
+    for (let i=0; i<Math.min(m.length, 10); i++){
+      const row = m[i].map(c => String(c ?? '').toLowerCase());
+      if (row.some(c => c.includes('placa') || c.includes('plate') || c.includes('registro'))) {
+        headerRowIdx = i;
+        break;
+      }
+    }
+
+    if (headerRowIdx >= 0) {
+      const header = m[headerRowIdx].map(c => String(c ?? '').trim());
+      const idxPlaca = header.findIndex(h => {
+        const l = h.toLowerCase();
+        return l.includes('placa') || l.includes('plate') || l.includes('registro');
+      });
+      const idxFilial = header.findIndex(h => ['filial','garagem','planta','base','regional','local'].some(x => h.toLowerCase().includes(x)));
+
+      for (let i=headerRowIdx+1; i<m.length; i++){
+        const row = m[i];
+        const placa = normPlate(row[idxPlaca] ?? row[0] ?? '');
+        if (!placa) continue;
+        const filial = normStr(row[(idxFilial >= 0 ? idxFilial : 1)] ?? '');
+        rows.push({ placa, filial });
+      }
+      return normalizeImportedRows(rows);
+    }
+
+    // fallback bruto: col A = placa, col B = filial (pula 1a linha se parecer header)
+    const firstRowStr = (m[0] || []).join(' ').toLowerCase();
+    const start = (firstRowStr.includes('placa') || firstRowStr.includes('filial') || firstRowStr.includes('garagem') || firstRowStr.includes('registro')) ? 1 : 0;
+
+    for (let i=start; i<m.length; i++){
+      const row = m[i];
+      const placa = normPlate(row[0] ?? '');
+      if (!placa) continue;
+      const filial = normStr(row[1] ?? '');
+      rows.push({ placa, filial });
+    }
+    return normalizeImportedRows(rows);
+  };
+
+  const loadRepoFile = async (url) => {
+    if (!hasXLSX()) throw new Error('Biblioteca XLSX não carregou (CDN).');
+    const res = await fetch(url, { cache:'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, { type:'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    if (!ws) return [];
+
+    const json = XLSX.utils.sheet_to_json(ws, { defval:'', raw:false });
+    if (json && json.length) {
+      const keys = Object.keys(json[0] || {});
+      const kPlaca = findHeaderKey(keys, ['placa','PLACA','plate','numero de registro','número de registro','registro']);
+      const kFilial = findHeaderKey(keys, ['filial','FILIAL','garagem','GARAGEM','planta','PLANTA','base','regional','local']);
+
+      const rows = [];
+      for (const r of json) {
+        const placa = normPlate(r[kPlaca] ?? r['PLACA'] ?? r['placa'] ?? '');
+        if (!placa) continue;
+        const filial = normStr(
+          (kFilial ? (r[kFilial]) : '') ??
+          r['FILIAL'] ?? r['filial'] ?? r['GARAGEM'] ?? r['garagem'] ?? r['PLANTA'] ?? r['planta']
+        );
+        rows.push({ placa, filial });
+      }
+      return normalizeImportedRows(rows);
+    }
+
+    const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval:'' });
+    return parseMatrixFallback(matrix);
+  };
+
+  const importFromFile = async (file, target) => {
+    const name = (file?.name || '').toLowerCase();
+    const isCSV = name.endsWith('.csv');
+
+    Toast.show(`Importando ${target}...`, file?.name || '', '');
+
+    let rows = [];
+    if (isCSV) rows = await parseCSV(file);
+    else rows = await parseXLSXFile(file);
+
+    if (!rows.length) {
+      Toast.show(`Importação ${target} não gerou linhas.`, 'Arquivo sem dados ou colunas não reconhecidas.', 'err');
+      return null;
+    }
+
+    base = loadBase();
+    if (target === 'WIKI') base.wiki = rows;
+    if (target === 'TELEMATIX') base.telematix = rows;
+    saveBase(base);
+
+    Toast.show(`Importação ${target} concluída!`, `${rows.length} placa(s) carregadas.`, 'ok');
+
+    renderPlacas();
+    return rows.length;
+  };
+
+  /* ===========================
+     Indicador (gráfico + listas)
+  ============================ */
+  const setIndicatorFullscreen = (on) => {
+    indicatorFull = !!on;
+    el.indicatorPanel.classList.toggle('sf-fullscreen', indicatorFull);
+    el.btnFull.style.display = indicatorFull ? 'none' : 'inline-flex';
+    el.btnFullClose.style.display = indicatorFull ? 'inline-flex' : 'none';
+  };
+
+  const getSelectedMonth = () => {
+    const v = el.monthPick.value;
+    if (v && v.includes('-')) {
+      const [y,m] = v.split('-').map(Number);
+      return { y, m };
+    }
+    const d = new Date();
+    return { y: d.getFullYear(), m: d.getMonth()+1 };
+  };
+
+  const rebuildWeekOptions = () => {
+    const { y, m } = getSelectedMonth();
+    const ranges = getWeekRangesInMonth(y, m);
+    const mName = monthNames[m-1] || 'MES';
+
+    el.weekPick.innerHTML = ranges.map((r, idx) => {
+      const label = `${r.label} ${mName}`;
+      return `<option value="${idx}">${label}</option>`;
+    }).join('');
+
+    if (el.weekPick.options.length) el.weekPick.value = '0';
+  };
+
+  const getSelectedWeeklyRange = () => {
+    const { y, m } = getSelectedMonth();
+    const ranges = getWeekRangesInMonth(y, m);
+    const idx = Math.max(0, Math.min(Number(el.weekPick.value || 0), ranges.length-1));
+    const r = ranges[idx] || ranges[0] || { label:'S1', s:1, e:7 };
+    const startISO = isoFromYMD(y, m, r.s);
+    const endISO = isoFromYMD(y, m, r.e);
+    const label = `${r.label} ${monthNames[m-1]} (${pad2(r.s)}/${pad2(m)}/${y} a ${pad2(r.e)}/${pad2(m)}/${y})`;
+    return { startISO, endISO, label, r };
+  };
+
+  const getMonthlyRanges = () => {
+    const { y, m } = getSelectedMonth();
+    const ranges = getWeekRangesInMonth(y, m);
+    const full = ranges.map(r => ({
+      ...r,
+      startISO: isoFromYMD(y, m, r.s),
+      endISO: isoFromYMD(y, m, r.e),
+      label: r.label
+    }));
+    return { y, m, ranges: full };
+  };
+
+ const computeCountsForRange = (startISO, endISO) => {
+  refreshMemory();
+  const rowsAll = mergeBaseToRows(base);
+
+  // mapa: ultima data (ISO) em que a placa virou "reportada"
+  const repMap = new Map();
+  const hh = Array.isArray(hist) ? hist : loadHist();
+
+  const pad2loc = n => String(n).padStart(2,'0');
+  const tsToISO = (ts) => {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${pad2loc(d.getMonth()+1)}-${pad2loc(d.getDate())}`;
+  };
+
+  for (const h of hh) {
+    if (h.status !== 'reportada') continue;
+    const emp = String(h.empresa || '').toUpperCase();
+    const pla = String(h.placa || '').toUpperCase();
+    if (!emp || !pla) continue;
+
+    const k = emp + '|' + pla;
+    const ts = Number(h.ts || 0);
+    const prev = repMap.get(k);
+    if (!prev || ts > prev.ts) repMap.set(k, { ts, iso: tsToISO(ts) });
   }
 
-  function setKPI(ok,total,cntFalha,cntReport,cntConcl){
-    const pct = total===0 ? 100 : Math.round((ok/total)*100);
-    byId('sfPctValue').textContent = pct+'%';
-    byId('sfPctSub').textContent   = total===0 ? 'Sem ocorrências no período' : `${ok} ok / ${total} total`;
-    byId('sfPctFill').style.width  = pct+'%';
+  const falha = [];
+  const report = [];
+  const concl = [];
 
-    byId('sfCntFalha').textContent  = String(cntFalha);
-    byId('sfCntReport').textContent = String(cntReport);
-    byId('sfCntConcl').textContent  = String(cntConcl);
+  for (const r of rowsAll) {
+    const key = r.empresa + '|' + r.placa;
+    const st = state[key];
+    if (!st || !st.inicio) continue;
 
-    byId('sfBadgeFalha').textContent  = String(cntFalha);
-    byId('sfBadgeReport').textContent = String(cntReport);
-    byId('sfBadgeConcl').textContent  = String(cntConcl);
+    const ini = st.inicio;          // início da falha (escolhido no modal)
+    const fim = st.fim || null;     // data de conclusão (quando concluída)
+    const repISO = st.report || (repMap.get(key)?.iso || null); // dia que virou reportada
+
+    // fora do período selecionado
+    if (ini > endISO) continue;
+    if (fim && fim < startISO) continue;
+
+    // "foto" do status no período:
+    // se a placa concluiu antes do fim do range, a gente avalia no dia da conclusão
+    let evalISO = endISO;
+    if (fim && fim < evalISO) evalISO = fim;
+
+    // se ainda não tinha começado até a data avaliada
+    if (evalISO < ini) continue;
+
+    // regra de timeline:
+    // - se evalISO == fim => verde (concluída naquela semana/período)
+    // - senão, se já passou da data "reportada" => laranja
+    // - senão => vermelho (falha)
+    let status = 'falha';
+    if (fim && evalISO === fim) status = 'concluida';
+    else if (repISO && repISO >= ini && repISO <= evalISO) status = 'reportada';
+    else status = 'falha';
+
+    const item = { ...r, ...st, report: repISO || null };
+
+    if (status === 'falha') falha.push(item);
+    else if (status === 'reportada') report.push(item);
+    else if (status === 'concluida') concl.push(item);
   }
 
-  function renderLists(buckets){
-    const map = (arr)=> arr
-      .sort((a,b)=>a.placa.localeCompare(b.placa))
-      .map(x=>`
+  return { falha, report, concl };
+};
+
+
+  const renderStatusList = (container, arr, showSince) => {
+    container.innerHTML = arr.slice()
+      .sort((a,b)=> (a.placa||'').localeCompare(b.placa||'', 'pt-BR'))
+      .map(it => `
         <div class="sf-item">
           <div class="left">
-            <b>${escapeHtml(x.placa)}</b>
-            <span>${escapeHtml(x.empresa)} • ${escapeHtml(x.filial)}</span>
+            <b>${escapeHtml(it.placa)}</b>
+            <span>${escapeHtml(it.filial || '—')} • ${escapeHtml(it.empresa || '—')}</span>
           </div>
-          <div class="sf-check">✓</div>
+          <div class="since">${showSince ? escapeHtml(fmtBR(it.inicio || it.fim)) : ''}</div>
         </div>
-      `).join('');
+      `).join('') || `<div style="padding:10px;color:#5b6b8b;">Nenhuma</div>`;
+  };
 
-    byId('sfListFalha').innerHTML  = map(buckets.falha);
-    byId('sfListReport').innerHTML = map(buckets.reportada);
-    byId('sfListConcl').innerHTML  = map(buckets.concluida);
-  }
+  const renderKpis = (falhaN, repN, conclN) => {
+    const ok = repN + conclN;
+    const total = falhaN + repN + conclN;
+    const pct = total ? (ok / total) : 1;
+    const pctTxt = `${Math.round(pct * 100)}%`;
 
-  async function renderWeeklyChart(cntFalha,cntReport,cntConcl){
-    await ensureChart();
-    const el=byId('sfWeeklyChart'); if(!el) return;
+    el.pctValue.textContent = pctTxt;
+    el.pctSub.textContent = total ? `${ok} ok / ${total} total` : `Sem dados`;
+    el.pctFill.style.width = `${Math.round(pct * 100)}%`;
 
-    if(weeklyChart) weeklyChart.destroy();
-    weeklyChart = new Chart(el, {
-      type:'bar',
-      data:{
-        labels:['Falha de sinal','Falha reportada','Resolvido'],
-        datasets:[{
-          label:'Quantidade',
-          data:[cntFalha,cntReport,cntConcl],
-          backgroundColor:['#b00020','#ff8c00','#1f8a3a'],
-          borderWidth:0,
-          borderRadius:10,
+    el.cntFalha.textContent = falhaN;
+    el.cntReport.textContent = repN;
+    el.cntConcl.textContent = conclN;
+
+    el.badgeFalha.textContent = falhaN;
+    el.badgeReport.textContent = repN;
+    el.badgeConcl.textContent = conclN;
+  };
+
+  const renderWeeklyChart = (falhaN, repN, conclN) => {
+    if (!window.Chart) return;
+    const ctx = el.weeklyCanvas.getContext('2d');
+    if (weeklyChart) weeklyChart.destroy();
+
+    weeklyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Falha', 'Reportada', 'Resolvida'],
+        datasets: [{
+          label: 'Qtde',
+          data: [falhaN, repN, conclN],
+          backgroundColor: ['#b00020', '#ff8c00', '#1f8a3a'],
+          borderWidth: 0,
+          borderRadius: 8
         }]
       },
-      options:{
-        responsive:true,
-        plugins:{ legend:{display:false} },
-        scales:{ y:{ beginAtZero:true, ticks:{precision:0} } }
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision:0 } } }
       }
     });
-  }
+  };
 
-  async function renderMonthlyChart(monthYYYYMM){
-    await ensureChart();
-    const el=byId('sfMonthlyChart'); if(!el) return;
+  const renderMonthlyChart = (weekLabels, dataFalha, dataRep, dataConcl) => {
+    if (!window.Chart) return;
+    const ctx = el.monthlyCanvas.getContext('2d');
+    if (monthlyChart) monthlyChart.destroy();
 
-    const weeks=getMonthWeeks(monthYYYYMM);
-    const labels=weeks.map(w=>{
-      const m=new Date(w.start).toLocaleString('pt-BR',{month:'short'}).toUpperCase().replace('.','');
-      return `${m} S${w.idx}`;
-    });
-
-    const falha=[], report=[], concl=[];
-    for(const w of weeks){
-      const c={ falha:0, reportada:0, concluida:0 };
-      for(const inc of DB.incidents){
-        const st=incidentStatusAtRange(inc, w.start, w.end);
-        if(!st) continue;
-        c[st]+=1;
-      }
-      falha.push(c.falha);
-      report.push(c.reportada);
-      concl.push(c.concluida);
-    }
-
-    if(monthlyChart) monthlyChart.destroy();
-    monthlyChart = new Chart(el, {
-      type:'bar',
-      data:{
-        labels,
-        datasets:[
-          { label:'Resolvido', data:concl, backgroundColor:'#1f8a3a', borderRadius:10 },
-          { label:'Falha reportada', data:report, backgroundColor:'#ff8c00', borderRadius:10 },
-          { label:'Falha de sinal', data:falha, backgroundColor:'#b00020', borderRadius:10 },
+    monthlyChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: weekLabels,
+        datasets: [
+          { label:'Falha', data: dataFalha, backgroundColor:'#b00020', borderRadius: 8 },
+          { label:'Reportada', data: dataRep, backgroundColor:'#ff8c00', borderRadius: 8 },
+          { label:'Resolvida', data: dataConcl, backgroundColor:'#1f8a3a', borderRadius: 8 },
         ]
       },
-      options:{
-        responsive:true,
-        plugins:{ legend:{position:'bottom'} },
-        scales:{ x:{stacked:true}, y:{stacked:true, beginAtZero:true, ticks:{precision:0}} }
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision:0 } } }
       }
     });
-  }
+  };
 
-  function renderIndicator(){
-    const rangeEl=byId('sfIndRange');
-    const chartTitle=byId('sfChartTitle');
-    const chartHint=byId('sfChartHint');
-    if(!rangeEl || !chartTitle || !chartHint) return;
+  const renderIndicator = () => {
+    refreshMemory();
 
-    if(MODE==='weekly'){
-      byId('sfWeeklyWrap').style.display='';
-      byId('sfMonthlyWrap').style.display='none';
-      byId('sfMonthWrap').style.display='none';
+    el.toggleBtns().forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
 
-      rangeEl.textContent=weekRangeLabel(CURRENT_WEEK_DATE);
-      chartTitle.textContent='Semanal';
-      chartHint.textContent='Contagem por status (semana atual)';
-
-      const { buckets } = getWeekBuckets(CURRENT_WEEK_DATE);
-      const cntFalha=buckets.falha.length;
-      const cntReport=buckets.reportada.length;
-      const cntConcl=buckets.concluida.length;
-
-      const total=cntFalha+cntReport+cntConcl;
-      const ok=cntReport+cntConcl;
-
-      setKPI(ok,total,cntFalha,cntReport,cntConcl);
-      renderLists(buckets);
-      renderWeeklyChart(cntFalha,cntReport,cntConcl);
+    if (currentMode === 'weekly') {
+      el.chartTitle.textContent = 'Semanal';
+      el.chartHint.textContent = 'Contagem por status (semana selecionada)';
+      el.weekWrap.style.display = '';
+      el.weeklyWrap.style.display = '';
+      el.monthlyWrap.style.display = 'none';
     } else {
-      byId('sfWeeklyWrap').style.display='none';
-      byId('sfMonthlyWrap').style.display='';
-      byId('sfMonthWrap').style.display='';
-
-      const d=new Date(CURRENT_MONTH+'-01T00:00:00');
-      rangeEl.textContent = 'Mês: ' + d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-      chartTitle.textContent='Mensal';
-      chartHint.textContent='Semanas do mês (barras empilhadas)';
-
-      const [yy,mm]=CURRENT_MONTH.split('-').map(Number);
-      const first=new Date(yy,mm-1,1); first.setHours(0,0,0,0);
-      const last =new Date(yy,mm,0);   last.setHours(23,59,59,999);
-
-      const buckets={ falha:[], reportada:[], concluida:[] };
-      for(const inc of DB.incidents){
-        const st=incidentStatusAtRange(inc, first, last);
-        if(!st) continue;
-        buckets[st].push(getPlateInfo(inc.placa, inc.filial, inc.empresa));
-      }
-
-      const cntFalha=buckets.falha.length;
-      const cntReport=buckets.reportada.length;
-      const cntConcl=buckets.concluida.length;
-
-      const total=cntFalha+cntReport+cntConcl;
-      const ok=cntReport+cntConcl;
-
-      setKPI(ok,total,cntFalha,cntReport,cntConcl);
-      renderLists(buckets);
-      renderMonthlyChart(CURRENT_MONTH);
+      el.chartTitle.textContent = 'Mensal';
+      el.chartHint.textContent = 'Barras empilhadas por semana do mês';
+      el.weekWrap.style.display = 'none';
+      el.weeklyWrap.style.display = 'none';
+      el.monthlyWrap.style.display = '';
     }
-  }
 
-  // =========================
-  // XLSX parse/load
-  // =========================
-  async function parseXlsxToRows(fileOrArrayBuffer){
-    await ensureXLSX();
-    let data;
-    if(fileOrArrayBuffer instanceof ArrayBuffer) data=fileOrArrayBuffer;
-    else data=await fileOrArrayBuffer.arrayBuffer();
+    if (currentMode === 'weekly') {
+      const w = getSelectedWeeklyRange();
+      el.indRange.textContent = w.label;
 
-    const wb=XLSX.read(data,{type:'array'});
-    const ws=wb.Sheets[wb.SheetNames[0]];
-    const json=XLSX.utils.sheet_to_json(ws,{defval:''});
+      const { falha, report, concl } = computeCountsForRange(w.startISO, w.endISO);
+      renderKpis(falha.length, report.length, concl.length);
 
-    return json.map(r=>({
-      placa: normalizePlaca(r['Número de registro'] ?? r['Numero de registro'] ?? r['Placa'] ?? r['placa'] ?? ''),
-      filial: safeText(r['Garagem'] ?? r['Filial'] ?? r['filial'] ?? '').trim(),
-    })).filter(x=>x.placa && x.filial);
-  }
+      renderStatusList(el.listFalha, falha, true);
+      renderStatusList(el.listReport, report, true);
+      renderStatusList(el.listConcl, concl, true);
 
-  async function loadFromRepo(){
-    try{
-      const [rw,rt]=await Promise.all([
-        fetch(SF_CFG.repoWikiXlsx,{cache:'no-store'}),
-        fetch(SF_CFG.repoTeleXlsx,{cache:'no-store'}),
-      ]);
-      if(!rw.ok) throw new Error('Falha ao buscar WIKI no repositório.');
-      if(!rt.ok) throw new Error('Falha ao buscar TELEMATIX no repositório.');
-      const bw=await rw.arrayBuffer();
-      const bt=await rt.arrayBuffer();
+      renderWeeklyChart(falha.length, report.length, concl.length);
+    } else {
+      const { y, m, ranges } = getMonthlyRanges();
+      el.indRange.textContent = `${monthNames[m-1]} ${y}`;
 
-      DB.base.wiki.rows = await parseXlsxToRows(bw);
-      DB.base.wiki.loadedAt = dateISO(new Date());
-      DB.base.tele.rows = await parseXlsxToRows(bt);
-      DB.base.tele.loadedAt = dateISO(new Date());
+      const weekLabels = ranges.map(r => r.label);
+      const dataFalha = [];
+      const dataRep = [];
+      const dataConcl = [];
 
-      saveDB(DB); rebuildBase();
-    }catch(e){ alert(e?.message || 'Erro ao carregar base do repositório.'); }
-  }
+      const monthStart = isoFromYMD(y, m, 1);
+      const monthEnd = isoFromYMD(y, m, new Date(y, m, 0).getDate());
+      const monthAgg = computeCountsForRange(monthStart, monthEnd);
 
-  async function loadFromUpload(kind,file){
-    try{
-      const rows=await parseXlsxToRows(file);
-      if(kind==='WIKI'){
-        DB.base.wiki.rows=rows;
-        DB.base.wiki.loadedAt=dateISO(new Date());
-      } else {
-        DB.base.tele.rows=rows;
-        DB.base.tele.loadedAt=dateISO(new Date());
+      renderKpis(monthAgg.falha.length, monthAgg.report.length, monthAgg.concl.length);
+      renderStatusList(el.listFalha, monthAgg.falha, true);
+      renderStatusList(el.listReport, monthAgg.report, true);
+      renderStatusList(el.listConcl, monthAgg.concl, true);
+
+      for (const r of ranges) {
+        const c = computeCountsForRange(r.startISO, r.endISO);
+        dataFalha.push(c.falha.length);
+        dataRep.push(c.report.length);
+        dataConcl.push(c.concl.length);
       }
-      saveDB(DB); rebuildBase();
-    }catch(e){ alert(e?.message || 'Erro ao ler XLSX.'); }
+
+      renderMonthlyChart(weekLabels, dataFalha, dataRep, dataConcl);
+    }
+
+    setIndicatorFullscreen(indicatorFull);
+  };
+
+  /* ===========================
+     escape helpers
+  ============================ */
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
+  function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
 
-  // =========================
-  // Views / wires
-  // =========================
-  function setSubView(view){
-    document.querySelectorAll('#TelaPlacasHistorico .sf-seg-btn').forEach(b=>{
-      b.classList.toggle('active', b.dataset.view===view);
-    });
-    byId('sfViewPlacas').classList.toggle('active', view==='placas');
-    byId('sfViewHistorico').classList.toggle('active', view==='historico');
-    if(view==='historico') renderHistorico(); else renderPlacasTable();
-  }
+  /* ===========================
+     bind UI
+  ============================ */
+  const bind = () => {
+    // sub-tabs placas/hist
+    el.segBtns().forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
 
-  function setFull(on){
-    const p=byId('sfIndicatorPanel');
-    const close=byId('sfBtnFullClose');
-    if(!p || !close) return;
-    p.classList.toggle('sf-fullscreen', !!on);
-    close.style.display = on ? '' : 'none';
-  }
-
-  function wire(){
-    // Segmented
-    document.querySelectorAll('#TelaPlacasHistorico .sf-seg-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>setSubView(btn.dataset.view));
+    // filtros placas
+    el.filterEmpresa.addEventListener('change', () => { renderFilters(); renderPlacas(); });
+    el.filterFilial.addEventListener('change', () => renderPlacas());
+    el.filterPlaca.addEventListener('input', () => renderPlacas());
+    el.btnClearFilters.addEventListener('click', () => {
+      el.filterEmpresa.value = 'ALL';
+      el.filterFilial.value = 'ALL';
+      el.filterPlaca.value = '';
+      renderPlacas();
     });
 
-    // filters
-    byId('sfFilterEmpresa')?.addEventListener('change', renderPlacasTable);
-    byId('sfFilterFilial')?.addEventListener('change', renderPlacasTable);
-    byId('sfFilterPlaca')?.addEventListener('input', renderPlacasTable);
-    byId('sfBtnClearFilters')?.addEventListener('click', ()=>{
-      byId('sfFilterEmpresa').value='ALL';
-      byId('sfFilterFilial').value='ALL';
-      byId('sfFilterPlaca').value='';
-      renderPlacasTable();
-    });
-
-    // load base
-    byId('sfBtnLoadRepo')?.addEventListener('click', loadFromRepo);
-    byId('sfFileWiki')?.addEventListener('change',(e)=>{
-      const f=e.target.files?.[0];
-      if(f) loadFromUpload('WIKI', f);
-      e.target.value='';
-    });
-    byId('sfFileTele')?.addEventListener('change',(e)=>{
-      const f=e.target.files?.[0];
-      if(f) loadFromUpload('TELEMATIX', f);
-      e.target.value='';
-    });
-
-    // histórico filters
-    byId('sfHistStatus')?.addEventListener('change', renderHistorico);
-    byId('sfHistPlaca')?.addEventListener('input', renderHistorico);
-    byId('sfBtnClearHist')?.addEventListener('click', ()=>{
-      byId('sfHistStatus').value='ALL';
-      byId('sfHistPlaca').value='';
+    // histórico
+    el.histStatus.addEventListener('change', () => renderHistorico());
+    el.histPlaca.addEventListener('input', () => renderHistorico());
+    el.btnClearHist.addEventListener('click', () => {
+      el.histStatus.value = 'ALL';
+      el.histPlaca.value = '';
       renderHistorico();
     });
-    byId('sfBtnExportHist')?.addEventListener('click', ()=>{
-      const blob=new Blob([JSON.stringify({exportedAt:nowISO(), history:DB.history, incidents:DB.incidents}, null, 2)],{type:'application/json'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;
-      a.download=`falha_sinal_export_${Date.now()}.json`;
+    el.btnExportHist.addEventListener('click', () => {
+      const data = JSON.stringify(loadHist(), null, 2);
+      const blob = new Blob([data], { type:'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `historico_falha_sinal_${todayISO()}.json`;
       a.click();
-      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+      URL.revokeObjectURL(a.href);
+      Toast.show('Histórico exportado!', a.download, 'ok');
     });
+
+    // modal close (backdrop + X + ESC)
+    el.modal.addEventListener('click', (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close === '1') closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (el.modal.classList.contains('show')) closeModal();
+        if (indicatorFull) setIndicatorFullscreen(false);
+      }
+    });
+
+    // ações modal
+    el.btnAddFalha.addEventListener('click', () => doAction('falha'));
+    el.btnReportar.addEventListener('click', () => doAction('reportada'));
+    el.btnConcluir.addEventListener('click', () => doAction('concluida'));
+    el.btnRemover.addEventListener('click', () => doAction('remover'));
 
     // indicador toggle
-    document.querySelectorAll('#TelaIndicadorFalha .sf-toggle-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        document.querySelectorAll('#TelaIndicadorFalha .sf-toggle-btn').forEach(x=>x.classList.remove('active'));
-        btn.classList.add('active');
-        MODE=btn.dataset.mode;
-        renderIndicator();
-      });
-    });
+    el.toggleBtns().forEach(btn => btn.addEventListener('click', () => {
+      currentMode = btn.dataset.mode;
+      renderIndicator();
+    }));
 
-    const mp=byId('sfMonthPick');
-    if(mp){
-      mp.value=CURRENT_MONTH;
-      mp.addEventListener('change', ()=>{
-        CURRENT_MONTH=mp.value || CURRENT_MONTH;
-        renderIndicator();
-      });
-    }
+    // mês/semana
+    const now = new Date();
+    const mm = `${now.getFullYear()}-${pad2(now.getMonth()+1)}`;
+    el.monthPick.value = mm;
+    rebuildWeekOptions();
+
+    el.monthPick.addEventListener('change', () => {
+      rebuildWeekOptions();
+      renderIndicator();
+    });
+    el.weekPick.addEventListener('change', () => renderIndicator());
 
     // fullscreen
-    byId('sfBtnFull')?.addEventListener('click', ()=>setFull(true));
-    byId('sfBtnFullClose')?.addEventListener('click', ()=>setFull(false));
+    el.btnFull.addEventListener('click', () => setIndicatorFullscreen(true));
+    el.btnFullClose.addEventListener('click', () => setIndicatorFullscreen(false));
 
-    wireModal();
-  }
+    // ===== IMPORT FILE (AJUSTADO) =====
+    // garante que "trocar o mesmo arquivo" sempre dispara (reseta onClick)
+    const armInputReset = (inputEl) => {
+      inputEl.addEventListener('click', () => { inputEl.value = ''; });
+    };
+    armInputReset(el.fileWiki);
+    armInputReset(el.fileTele);
 
-  function init(){
-    wire();
-    rebuildBase();
-    renderIndicator();
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
-</script>
-
-
-<script>
-(function(){
-  try {
-    if (typeof loadDB === 'function' && typeof saveDB === 'function') {
-      const db = loadDB();
-      const hasBase = db?.base?.length;
-      if (!hasBase && window.SF_EMBED_BASE) {
-        const merge = [];
-        (window.SF_EMBED_BASE.wiki||[]).forEach(r => merge.push({ empresa:'WIKI', placa:r.placa, filial:r.filial }));
-        (window.SF_EMBED_BASE.telematix||[]).forEach(r => merge.push({ empresa:'TELEMATIX', placa:r.placa, filial:r.filial }));
-        db.base = merge;
-        db.baseLoadedAt = new Date().toISOString();
-        saveDB(db);
+    el.fileWiki.addEventListener('change', async () => {
+      const f = el.fileWiki.files && el.fileWiki.files[0];
+      if (!f) return;
+      try {
+        el.baseStatus.textContent = 'Importando WIKI...';
+        const n = await importFromFile(f, 'WIKI');
+        if (n) el.baseStatus.textContent = `WIKI importada: ${n} placa(s)`;
+      } catch (e) {
+        el.baseStatus.textContent = 'Falha ao importar WIKI';
+        Toast.show('Falha ao importar WIKI.', (e && (e.message || String(e))) || 'Erro desconhecido', 'err');
       }
-    }
-  } catch(_e) {}
-})();
-</script>
+    });
 
+    el.fileTele.addEventListener('change', async () => {
+      const f = el.fileTele.files && el.fileTele.files[0];
+      if (!f) return;
+      try {
+        el.baseStatus.textContent = 'Importando TELEMATIX...';
+        const n = await importFromFile(f, 'TELEMATIX');
+        if (n) el.baseStatus.textContent = `TELEMATIX importada: ${n} placa(s)`;
+      } catch (e) {
+        el.baseStatus.textContent = 'Falha ao importar TELEMATIX';
+        Toast.show('Falha ao importar TELEMATIX.', (e && (e.message || String(e))) || 'Erro desconhecido', 'err');
+      }
+    });
+
+    el.btnLoadRepo.addEventListener('click', async () => {
+      try {
+        if (!hasXLSX()) {
+          Toast.show('XLSX não carregou (CDN).', 'Sem XLSX não consigo ler .xlsx do repositório.', 'err');
+          return;
+        }
+        el.baseStatus.textContent = 'Carregando do repositório...';
+        Toast.show('Carregando base do repositório...', '/data/WIKIPLACAS.xlsx e /data/TELEMATIXPLACAS.xlsx', '');
+
+        const [w, t] = await Promise.all([
+          loadRepoFile('/data/WIKIPLACAS.xlsx'),
+          loadRepoFile('/data/TELEMATIXPLACAS.xlsx')
+        ]);
+
+        base = { wiki: w, telematix: t };
+        saveBase(base);
+
+        Toast.show('Base atualizada!', `WIKI: ${w.length} • TELEMATIX: ${t.length}`, 'ok');
+        renderPlacas();
+      } catch (e) {
+        el.baseStatus.textContent = 'Falha ao carregar base';
+        Toast.show('Falha ao carregar do repositório.', (e && (e.message || String(e))) || 'Erro desconhecido', 'err');
+      }
+    });
+
+    // aviso preventivo se XLSX não carregou
+    if (!hasXLSX()) {
+      Toast.show('Atenção: XLSX não carregou.', 'Se for rede bloqueando CDN, import .xlsx não vai funcionar (CSV funciona).', 'err');
+    }
+  };
+
+  const init = () => {
+    bind();
+    setView('placas');
+    renderPlacas();
+    setIndicatorFullscreen(false);
+  };
+
+  return { init, renderPlacas, renderHistorico, renderIndicator };
+})();
+
+/* helpers globais */
+function escapeHtml(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+/* inicia */
+SF.init();
+</script>
 </body>
 </html>
