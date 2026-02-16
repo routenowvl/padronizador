@@ -71,7 +71,7 @@ body {
 }
 
 /* =========================================================
-   [BLOCO: TOP TABS — Suporte/Diversos/Placas]
+   [BLOCO: TOP TABS — Suporte/CCO/Placas]
    (alterações futuras dessa área: mexer só aqui)
    ========================================================= */
 .top-tabs {
@@ -615,7 +615,7 @@ button:active, .btn:active { transform: scale(0.97); }
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
       </svg>
-      Diversos
+      CCO
     </button>
 
     <button class="top-tab" id="topPlacas" type="button" data-top="placas" role="tab" aria-selected="false">
@@ -887,26 +887,7 @@ button:active, .btn:active { transform: scale(0.97); }
                 </svg>
               </div>
               <div class="nav-label">
-                <b>Padronizador Tarifa</b>
-                <span>Envio único (XLSX) • retorno XLSX</span>
-              </div>
-            </div>
-            <div class="nav-chip">XLSX</div>
-          </button>
-
-          <button class="nav-btn" type="button" data-tab="padronizador_info_rota">
-            <div class="nav-left">
-              <div class="nav-ico" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3v18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M5 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M5 16h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M16 8h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M16 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="nav-label">
-                <b>Padronizador Info-Rota</b>
+                <b>Padronizar Verde Campo</b>
                 <span>Envio único (XLSX) • retorno XLSX</span>
               </div>
             </div>
@@ -916,7 +897,7 @@ button:active, .btn:active { transform: scale(0.97); }
         </nav>
 
         <div class="sidebar-footer">
-          VIA Group • Diversos<br>
+          VIA Group • CCO<br>
           <span style="opacity:.75">Ferramentas auxiliares</span>
         </div>
       </aside>
@@ -924,7 +905,7 @@ button:active, .btn:active { transform: scale(0.97); }
       <main class="content">
 
         <div class="screen active" id="screenPadronizadorTarifa">
-          <h1>Padronizador Tarifa</h1>
+          <h1>Padronizar Verde Campo</h1>
           <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
 
           <form class="js-upload-form"
@@ -945,32 +926,7 @@ button:active, .btn:active { transform: scale(0.97); }
             <button type="submit">Processar</button>
           </form>
 
-          <div class="footer">VIA Group • Diversos</div>
-        </div>
-
-        <div class="screen" id="screenPadronizadorInfoRota">
-          <h1>Padronizador Info-Rota</h1>
-          <div class="subtitle">Envie um arquivo XLSX e receba o retorno padronizado</div>
-
-          <form class="js-upload-form"
-            id="uploadFormInfoRota"
-            data-mode="info_rota"
-            action="https://n8n.datastack.viagroup.com.br/webhook/INFO-ROTA"
-            method="post"
-            enctype="multipart/form-data"
-          >
-            <input type="hidden" name="modulo" value="PADRONIZADOR_INFO_ROTA">
-
-            <div class="form-group upload-area">
-              <label>Arquivo (XLSX)</label>
-              <input id="fileInputInfoRota" type="file" name="file" accept=".xlsx" required>
-              <span>Apenas XLSX</span>
-            </div>
-
-            <button type="submit">Processar</button>
-          </form>
-
-          <div class="footer">VIA Group • Diversos</div>
+          <div class="footer">VIA Group • CCO</div>
         </div>
 
       </main>
@@ -1210,7 +1166,6 @@ function setActiveTabDiversos(tabName){
   tabsDiversos.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
 
   document.getElementById('screenPadronizadorTarifa').classList.toggle('active', tabName === 'padronizador_tarifa');
-  document.getElementById('screenPadronizadorInfoRota').classList.toggle('active', tabName === 'padronizador_info_rota');
 }
 tabsDiversos.forEach(btn => btn.addEventListener('click', () => setActiveTabDiversos(btn.dataset.tab)));
 
@@ -1237,8 +1192,7 @@ function setLoadingMode(mode){
   if (mode === 'importkm')  title = 'Processando Importação de KM';
   if (mode === 'roteiro')   title = 'Processando roteirização';
   if (mode === 'escala')    title = 'Aplicando Escala Padrão';
-  if (mode === 'pad_tarifa') title = 'Processando Padronizador Tarifa';
-  if (mode === 'info_rota') title = 'Processando Padronizador Info-Rota';
+  if (mode === 'pad_tarifa') title = 'Processando Verde Campo';
   $('loadingTitle').textContent = title;
 
   const steps = $('stepList').querySelectorAll('.step');
@@ -1247,8 +1201,8 @@ function setLoadingMode(mode){
       ? ['Enviando arquivo', 'Validando estrutura', 'Convertendo KM para padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
       : mode === 'escala'
         ? ['Enviando arquivos', 'Validando estrutura', 'Aplicando escala padrão', 'Gerando XLSX final', 'Finalizando e preparando download']
-        : (mode === 'pad_tarifa' || mode === 'info_rota')
-          ? ['Enviando arquivo', 'Validando estrutura', 'Padronizando', 'Gerando XLSX final', 'Finalizando e preparando download']
+        : (mode === 'pad_tarifa')
+          ? ['Enviando arquivo', 'Validando estrutura', 'Padronizando Verde Campo', 'Gerando XLSX final', 'Finalizando e preparando download']
           : ['Enviando arquivo', 'Validando estrutura', 'Convertendo para padrão', 'Gerando XLSX final', 'Finalizando e preparando download'];
 
   steps.forEach((el, idx) => {
@@ -1334,11 +1288,6 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
       if (!f) { alert('Selecione um XLSX'); return; }
       currentTop = 'diversos';
       currentDiversosTab = 'padronizador_tarifa';
-    } else if (mode === 'info_rota') {
-      const f = document.getElementById('fileInputInfoRota')?.files?.[0];
-      if (!f) { alert('Selecione um XLSX'); return; }
-      currentTop = 'diversos';
-      currentDiversosTab = 'padronizador_info_rota';
     }
 
     showLoading();
@@ -1362,7 +1311,7 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
               { pctTo: 92, step: 4, sub: 'Gerando XLSX final…' },
               { pctTo: 99, step: 5, sub: 'Finalizando…' },
             ]
-          : (mode === 'pad_tarifa' || mode === 'info_rota')
+          : (mode === 'pad_tarifa')
             ? [
                 { pctTo: 18, step: 1, sub: 'Enviando arquivo…' },
                 { pctTo: 35, step: 2, sub: 'Validando estrutura…' },
@@ -1415,16 +1364,11 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
 
       let fileName = decodeURIComponent((match && (match[1] || match[2])) || '');
 
-      if (mode === 'pad_tarifa' || mode === 'info_rota') fileName = '';
+      if (mode === 'pad_tarifa') fileName = '';
 
       if (!fileName) {
-        if (mode === 'pad_tarifa') fileName = 'PADRONIZADOR_TARIFA.txt';
-        else if (mode === 'info_rota') fileName = 'PADRONIZADOR_INFO-ROTA.txt';
+        if (mode === 'pad_tarifa') fileName = 'VERDE_CAMPO_PROCESSADO.xlsx';
         else fileName = 'VIA_GROUP_PROCESSADO.xlsx';
-      }
-
-      if ((mode === 'pad_tarifa' || mode === 'info_rota') && !/\.txt$/i.test(fileName)) {
-        fileName = (fileName.replace(/\.[^.]+$/i, '') || (mode === 'pad_tarifa' ? 'PADRONIZADOR_TARIFA' : 'PADRONIZADOR_INFO-ROTA')) + '.txt';
       }
 
       const url = URL.createObjectURL(blob);
@@ -1439,13 +1383,12 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
             ? (form.querySelector('input[name="empresa"]')?.value || '—')
             : mode === 'escala'
               ? 'Escala Padrão'
-              : (mode === 'pad_tarifa' ? 'Padronizador Tarifa' : 'Padronizador Info-Rota');
+              : (mode === 'pad_tarifa' ? 'Verde Campo' : '—');
 
       $('resModulo').textContent =
         mode === 'importkm'   ? 'Importação de KM' :
         mode === 'escala'     ? 'Aplicar Escala Padrão' :
-        mode === 'pad_tarifa' ? 'Padronizador Tarifa' :
-        mode === 'info_rota'  ? 'Padronizador Info-Rota' :
+        mode === 'pad_tarifa' ? 'Padronizar Verde Campo' :
                                 'Padronizador';
 
       $('resOrigem').textContent = origem;
@@ -1482,4 +1425,3 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
 
 </body>
 </html>
-
