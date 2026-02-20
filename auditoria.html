@@ -1,0 +1,2193 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auditoria de Rotas</title>
+
+  <style>
+    /* ===============================
+      Tema: Branco + Azul (Padronizador)
+      + animações e detalhismo
+    =============================== */
+    :root{
+      --bg:#f6f9ff;
+      --panel:#ffffff;
+      --panel2:#f2f6ff;
+      --line:#dbe6ff;
+      --line2:#e8efff;
+      --text:#0b1a33;
+      --muted:#5a6b8a;
+
+      --blue:#1d4ed8;
+      --blue2:#2563eb;
+      --blue3:#3b82f6;
+      --blueSoft:#e7efff;
+
+      --danger:#ef4444;
+      --dangerSoft:#ffe8e8;
+
+      --shadow: 0 10px 28px rgba(16, 52, 120, .08);
+      --shadow2: 0 18px 44px rgba(16, 52, 120, .12);
+
+      --radius: 18px;
+      --radius2: 22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial;
+      background:
+        radial-gradient(1200px 650px at 15% 5%, #eaf2ff 0%, transparent 55%),
+        radial-gradient(900px 540px at 85% 0%, #e9f0ff 0%, transparent 55%),
+        linear-gradient(#f6f9ff, #f6f9ff);
+      color:var(--text);
+    }
+
+    /* micro animações */
+    @keyframes popIn { from{transform:translateY(6px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes shine { from{transform:translateX(-120%)} to{transform:translateX(120%)} }
+
+    .wrap{max-width:1160px;margin:0 auto;padding:26px 18px 40px}
+    .header{
+      display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:14px;
+      animation: popIn .35s ease both;
+    }
+    .title{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:-.02em;
+      line-height:1.2;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:13px;
+      max-width:760px;
+    }
+
+    /* botões */
+    .btn{
+      border:1px solid transparent;
+      cursor:pointer;
+      user-select:none;
+      font-weight:800;
+      padding:10px 14px;
+      border-radius:14px;
+      background: var(--blue2);
+      color:#fff;
+      transition: transform .12s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
+      box-shadow: 0 10px 20px rgba(37,99,235,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .btn::after{
+      content:"";
+      position:absolute;
+      top:-40%;
+      left:-60%;
+      width:60%;
+      height:180%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+      transform: translateX(-120%);
+      opacity:.35;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(37,99,235,.22);
+      filter: brightness(1.02);
+      background: var(--blue);
+    }
+    .btn:hover::after{ animation: shine .75s ease; }
+    .btn:active{ transform: translateY(0px) scale(.99); box-shadow: 0 10px 18px rgba(37,99,235,.18); }
+    .btn.ghost{
+      background:#fff;
+      color: var(--blue2);
+      border-color: var(--line);
+      box-shadow: 0 10px 18px rgba(16, 52, 120, .07);
+    }
+    .btn.ghost:hover{
+      background: var(--panel2);
+      box-shadow: 0 14px 24px rgba(16, 52, 120, .10);
+      transform: translateY(-1px);
+    }
+    .btn.danger{
+      background: var(--danger);
+      box-shadow: 0 12px 22px rgba(239,68,68,.18);
+    }
+    .btn.danger:hover{
+      filter: brightness(1.02);
+      box-shadow: 0 16px 28px rgba(239,68,68,.22);
+    }
+    .btn.small{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    /* painéis */
+    .panel{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      padding:14px;
+      margin-bottom:14px;
+      animation: popIn .35s ease both;
+    }
+
+    .grid3{display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media(max-width:960px){ .grid3{grid-template-columns:1fr} .grid2{grid-template-columns:1fr} }
+
+    label{font-size:12px; color:var(--muted); font-weight:700}
+    input[type="text"], input[type="file"], textarea, select{
+      width:100%;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 12px;
+      color: var(--text);
+      outline: none;
+      font-size:14px;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .12s ease;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+    }
+    textarea{min-height:110px; resize:vertical}
+
+    .hint{font-size:12px; color:var(--muted); margin-top:6px}
+    .stats{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+      font-size:12px;
+      font-weight:900;
+      transition: transform .14s ease, box-shadow .18s ease;
+    }
+    .chip:hover{ transform: translateY(-1px); box-shadow: 0 10px 18px rgba(16,52,120,.08); }
+    .chip.blue{ border-color: rgba(37,99,235,.25); background: rgba(37,99,235,.10); color: var(--blue); }
+
+    /* lista */
+    .list{display:flex; flex-direction:column; gap:12px}
+
+    .route{
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      transition: transform .16s ease, box-shadow .18s ease;
+    }
+    .route:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow2);
+    }
+
+    .routeHead{
+      padding:14px 14px 12px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      cursor:pointer;
+      position:relative;
+    }
+    .routeHead::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      opacity:0;
+      background: linear-gradient(90deg, rgba(37,99,235,.08), transparent 55%);
+      transition: opacity .18s ease;
+      pointer-events:none;
+    }
+    .routeHead:hover::before{ opacity:1; }
+
+    .routeTitle{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      font-weight:950;
+      letter-spacing:-.01em;
+      font-size:16px;
+    }
+    .pill{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      background: var(--blueSoft);
+      border: 1px solid rgba(37,99,235,.22);
+      color: var(--blue);
+      font-weight:900;
+      font-size:12px;
+      transition: transform .14s ease;
+    }
+    .route:hover .pill{ transform: translateY(-1px); }
+
+    .routeMeta{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .routeMeta .k{font-size:12px; font-weight:800; color: var(--muted)}
+    .routeMeta .v{
+      margin-top:3px;
+      color: var(--text);
+      font-weight:850;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    @media(max-width:960px){ .routeMeta{grid-template-columns:1fr} }
+
+    /* accordion animação */
+    .routeBodyWrap{
+      display:block;
+      max-height:0;
+      overflow:hidden;
+      transition: max-height .45s cubic-bezier(.2,.9,.2,1);
+      border-top:1px solid transparent;
+    }
+    .routeBodyWrap.open{
+      border-top-color: var(--line2);
+      max-height: 2200px; /* suficiente para transição suave */
+    }
+    .routeBody{
+      padding:14px;
+      background: linear-gradient(#fff, #fff) padding-box,
+                  linear-gradient(180deg, rgba(37,99,235,.10), transparent 55%) border-box;
+      border-top: 0;
+      animation: popIn .25s ease both;
+    }
+
+    .twoCols{display:grid; grid-template-columns: 1.1fr .9fr; gap:12px}
+    @media(max-width:960px){ .twoCols{grid-template-columns:1fr} }
+
+    .box{
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: 0 10px 22px rgba(16,52,120,.06);
+      padding:12px;
+      transition: transform .16s ease, box-shadow .18s ease;
+    }
+    .box:hover{ transform: translateY(-1px); box-shadow: 0 14px 30px rgba(16,52,120,.10); }
+    .boxTitle{
+      font-weight:950;
+      letter-spacing:-.01em;
+      margin: 2px 0 10px;
+    }
+
+    /* charts: tamanho fixo (evita "explodir" no PDF) */
+    .chartWrap{
+      height:260px;
+      min-height:260px;
+      max-height:260px;
+    }
+    .chartWrap canvas{
+      width:100% !important;
+      height:100% !important;
+      display:block;
+    }
+
+    @media print{
+      .chartWrap{
+        height:220px;
+        min-height:220px;
+        max-height:220px;
+      }
+      .box, .kpiCard, .bTable{ break-inside: avoid; page-break-inside: avoid; }
+    }
+
+    .kv{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    @media(max-width:960px){ .kv{grid-template-columns:1fr} }
+    .kvc{
+      background: var(--panel2);
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:10px;
+      min-width:0;
+      transition: transform .14s ease;
+    }
+    .kvc:hover{ transform: translateY(-1px); }
+    .kvc .k{font-size:12px; color: var(--muted); font-weight:800}
+    .kvc .v{margin-top:4px; font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+    /* erros */
+    .errors{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+    .err{
+      background: #fff;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      padding:12px;
+      box-shadow: 0 10px 20px rgba(16,52,120,.05);
+      transition: transform .16s ease, box-shadow .18s ease;
+    }
+    .err:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px rgba(16,52,120,.10); }
+    .errTop{display:flex; gap:10px; justify-content:space-between; align-items:flex-start}
+    .errTitle{font-weight:950}
+    .errDesc{margin-top:10px; white-space:pre-wrap; word-break:break-word; font-size:14px; color: var(--text)}
+    .errMini{margin-top:10px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+    @media(max-width:960px){ .errMini{grid-template-columns:1fr} }
+    .errMini .kvc{background: #fff; border-color: var(--line2)}
+
+    /* thumbs */
+    .thumbs{margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+    @media(max-width:960px){ .thumbs{grid-template-columns:repeat(2,1fr)} }
+    .thumb{
+      border:1px solid var(--line);
+      background: var(--panel2);
+      border-radius: 16px;
+      padding:8px;
+      transition: transform .16s ease;
+    }
+    .thumb:hover{ transform: translateY(-1px); }
+    .thumb img{width:100%; height:110px; object-fit:cover; border-radius: 14px; display:block}
+
+    /* drop zone */
+    .drop{
+      border:2px dashed rgba(37,99,235,.35);
+      border-radius: var(--radius2);
+      padding:12px;
+      background: linear-gradient(180deg, rgba(37,99,235,.08), rgba(37,99,235,.02));
+      transition: transform .16s ease, box-shadow .18s ease, border-color .18s ease;
+      outline:none;
+    }
+    .drop:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.14);
+    }
+    .drop:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(16,52,120,.10);
+      border-color: rgba(37,99,235,.50);
+    }
+
+    .imgList{margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+    @media(max-width:960px){ .imgList{grid-template-columns:repeat(2,1fr)} }
+    .imgItem{
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding:8px;
+      box-shadow: 0 10px 18px rgba(16,52,120,.06);
+      transition: transform .16s ease, box-shadow .18s ease;
+    }
+    .imgItem:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(16,52,120,.10); }
+    .imgItem img{width:100%; height:110px; object-fit:cover; border-radius: 14px}
+    .imgItem .foot{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px}
+    .imgItem .foot span{font-size:11px; color: var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+    .toggleRow{
+      display:flex; justify-content:space-between; gap:12px; align-items:center;
+      border:1px solid var(--line);
+      background: var(--panel2);
+      border-radius: 16px;
+      padding:10px 12px;
+      transition: transform .16s ease, box-shadow .18s ease;
+    }
+    .toggleRow:hover{ transform: translateY(-1px); box-shadow: 0 14px 24px rgba(16,52,120,.08); }
+    .toggleRow .t1{font-weight:950}
+    .toggleRow .t2{font-size:12px; color: var(--muted); margin-top:3px}
+
+    .footer{
+      margin-top:16px;
+      color: var(--muted);
+      font-size:12px;
+      animation: popIn .35s ease both;
+    }
+    .tag{font-weight:950; color: var(--text)}
+  
+
+    /* ===============================
+      Tabs + Resumo (BI)
+    =============================== */
+    .brandRow{display:flex; gap:12px; align-items:center; min-width:0}
+    .logo{
+      width:118px;
+      height:auto;
+      background:#fff;
+      border-radius:16px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      box-shadow: 0 10px 18px rgba(16,52,120,.08);
+      flex:0 0 auto;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin: 8px 0 14px;
+      animation: popIn .35s ease both;
+    }
+    .tabBtn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 950;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+      box-shadow: 0 10px 18px rgba(16,52,120,.06);
+      position:relative;
+      overflow:hidden;
+    }
+    .tabBtn:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(16,52,120,.10); background: var(--panel2); }
+    .tabBtn.active{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.10);
+      color: var(--blue);
+      box-shadow: 0 14px 26px rgba(37,99,235,.14);
+    }
+    .tabPage{ display:none; }
+    .tabPage.active{ display:block; animation: popIn .25s ease both; }
+
+    /* Resumo (BI) */
+    .summaryHead{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap}
+    .sumTitle{font-weight:950; letter-spacing:-.02em; font-size:18px; margin:0}
+    .rowHead{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+
+    .bTable{
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 10px 22px rgba(16,52,120,.06);
+      overflow:hidden;
+    }
+    .bHead, .bRow{
+      display:grid;
+      grid-template-columns: 1.2fr 1.1fr 1fr .55fr .55fr 88px;
+      gap:10px;
+      align-items:center;
+    }
+    .bHead{
+      padding: 12px 12px;
+      background: linear-gradient(90deg, rgba(37,99,235,.08), rgba(255,255,255,.90));
+      border-bottom: 1px solid var(--line);
+      font-size:12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .bBody{ padding: 6px 0; }
+    .bRow{
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line2);
+    }
+    .bRow:last-child{ border-bottom: 0; }
+    .bRow input[type="number"]{ text-align:right; }
+
+    .sumActions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .sumActions .btn{min-width:220px}
+    .sumActions .btn.ghost{min-width:auto}
+
+    .kpiGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+      margin: 14px 0;
+    }
+    @media(max-width:960px){ .kpiGrid{grid-template-columns:1fr 1fr} }
+    @media(max-width:560px){ .kpiGrid{grid-template-columns:1fr} }
+
+    .kpiCard{
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(242,246,255,.90));
+      border:1px solid var(--line);
+      border-radius: 22px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 26px rgba(16,52,120,.08);
+      transition: transform .16s ease, box-shadow .18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .kpiCard::after{
+      content:"";
+      position:absolute;
+      inset:auto -40% -55% -40%;
+      height:140px;
+      background: radial-gradient(circle at 50% 0%, rgba(37,99,235,.18), transparent 60%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    .kpiCard:hover{ transform: translateY(-1px); box-shadow: 0 16px 34px rgba(16,52,120,.12); }
+    .kpiCard .k{font-size:12px; color: var(--muted); font-weight:900}
+    .kpiCard .v{margin-top:4px; font-size:22px; font-weight:950; letter-spacing:-.02em}
+    .kpiCard .s{margin-top:6px; font-size:12px; color: var(--muted); font-weight:800}
+
+    .outTable{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      background:#fff;
+    }
+    .outTable th, .outTable td{ padding:10px 12px; text-align:left; font-size:13px; }
+    .outTable thead th{
+      background: var(--panel2);
+      color: var(--muted);
+      font-weight:950;
+      border-bottom:1px solid var(--line);
+    }
+    .outTable tbody tr:nth-child(even) td{ background: rgba(242,246,255,.55); }
+    .outTable td.num{ text-align:right; font-weight:950; }
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--line);
+      background: var(--panel2);
+      font-weight:900; font-size:12px;
+    }
+    .badge.blue{ border-color: rgba(37,99,235,.25); background: rgba(37,99,235,.10); color: var(--blue); }
+
+    @media print{
+      body{ background:#fff !important; }
+      .tabs, #auditoriaTab, #btnDoc{ display:none !important; }
+      #resumoTab{ display:block !important; }
+      #summaryOutput{ display:block !important; }
+      .panel{ box-shadow:none !important; }
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="brandRow">
+        <img class="logo" src="https://viagroup.com.br/assets/via_group-22fac685.png" alt="VIA Group" />
+        <div class="title">
+          <h1>Auditoria de Rotas</h1>
+          <div class="sub">
+            Importe o Excel, adicione erros por rota (com imagens) e gere um relatório Word bonito e apresentável.
+          </div>
+        </div>
+      </div>
+      <button id="btnDoc" class="btn" data-only="auditoria">Gerar Relatório da Auditoria</button>
+    </div>
+
+
+    <div class="tabs" role="tablist" aria-label="Navegação">
+      <button class="tabBtn active" data-tab="auditoriaTab" role="tab" aria-selected="true">Auditoria</button>
+      <button class="tabBtn" data-tab="resumoTab" role="tab" aria-selected="false">Resumo</button>
+    </div>
+
+    <section id="auditoriaTab" class="tabPage active">
+    <div class="panel">
+      <div class="grid3">
+        <div class="col">
+          <label>1) Importar arquivo (.xlsx)</label>
+          <input id="file" type="file" accept=".xlsx,.xls" />
+          <div class="hint">Tipo da rota é inferido pela última letra do nome (D/R/S/X/Y). Ex: 123456D, 789010R.</div>
+        </div>
+
+        <div class="col">
+          <label>Filtro Tipo</label>
+          <select id="filterType">
+            <option value="ALL">Todos</option>
+            <option value="D">D (Direta)</option>
+            <option value="R">R (Reboque)</option>
+            <option value="S">S</option>
+            <option value="X">X (Socorro)</option>
+            <option value="Y">Y (Socorro)</option>
+            <option value="UNK">Desconhecido</option>
+          </select>
+        </div>
+
+        <div class="col">
+          <label>Buscar (rota, motorista, placa, status, evento...)</label>
+          <input id="search" type="text" placeholder="ex: 930006D ou Matheus ou 'em aberto'..." />
+        </div>
+      </div>
+
+      <div class="stats">
+        <span class="chip blue">Rotas: <span id="statRoutes">0</span></span>
+        <span class="chip blue">Rotas com erro: <span id="statRoutesWithErr">0</span></span>
+        <span class="chip blue">Erros: <span id="statErrors">0</span></span>
+      </div>
+    </div>
+
+    <div id="list" class="list"></div>
+
+    <div class="footer">
+      <div><span class="tag">Imagens:</span> clique no quadro “Imagens” e cole com <b>Ctrl+V</b> (print), ou arraste e solte, ou selecione arquivo.</div>
+      <div style="margin-top:6px"><span class="tag">Relatório Word:</span> apenas rotas com erro entram no relatório. No Word, cada rota vira “Título” (dá pra recolher/expandir).</div>
+    </div>
+        </section>
+
+    <section id="resumoTab" class="tabPage">
+      <div class="panel">
+        <div class="summaryHead">
+          <div style="min-width:0">
+            <div class="sumTitle">Resumo (BI)</div>
+            <div class="sub">Preencha as filiais, período, quantidades e clique em <b>OK</b> para gerar um painel bonito com gráficos.</div>
+          </div>
+          <div class="stats" style="margin-top:0">
+            <span class="chip blue">Arquivo — Rotas: <span id="sumStatRoutes">0</span></span>
+            <span class="chip blue">Rotas com erro: <span id="sumStatRoutesWithErr">0</span></span>
+            <span class="chip blue">Erros: <span id="sumStatErrors">0</span></span>
+          </div>
+        </div>
+
+        <div class="grid3" style="margin-top:12px">
+          <div class="col">
+            <label>Período (Início)</label>
+            <input id="sumStart" type="date" />
+            <div class="hint">Se você importou o Excel, eu já tento preencher automático.</div>
+          </div>
+          <div class="col">
+            <label>Período (Fim)</label>
+            <input id="sumEnd" type="date" />
+            <div class="hint">Você pode ajustar manualmente.</div>
+          </div>
+          <div class="col">
+            <label>Título / Observação geral (opcional)</label>
+            <input id="sumTitleNote" type="text" placeholder="Ex: Auditoria semanal — Regionais / Filiais" />
+            <div class="hint">Isso aparece no dashboard.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="rowHead">
+          <div style="font-weight:950; letter-spacing:-.01em">Filiais / Responsáveis / Status</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button id="btnAddBranch" class="btn ghost small">+ Adicionar filial</button>
+          </div>
+        </div>
+
+        <div id="branchTable" class="bTable"></div>
+
+        <div class="hint" style="margin-top:10px">
+          Dica: você pode deixar o <b>Status</b> como “OK”, “Em andamento”, “Pendente”, “Revisar” ou qualquer texto que preferir.
+        </div>
+
+        <div class="sumActions">
+          <button id="btnGenerateSummary" class="btn">OK — Gerar gráficos</button>
+          <button id="btnClearSummary" class="btn ghost">Limpar</button>
+        </div>
+      </div>
+
+      <div id="summaryOutput" class="panel" style="display:none">
+        <div class="summaryHead">
+          <div style="min-width:0">
+            <div class="sumTitle">Dashboard</div>
+            <div class="sub" id="outPeriod">—</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <button id="btnPrintSummary" class="btn ghost small">Imprimir / PDF</button>
+          </div>
+        </div>
+
+        <div id="kpiGrid" class="kpiGrid"></div>
+
+        <div class="twoCols">
+          <div class="box">
+            <div class="boxTitle">Rotas × Erros por filial</div>
+            <div class="chartWrap"><canvas id="chartRotasErros"></canvas></div>
+          </div>
+
+          <div class="box">
+            <div class="boxTitle">Distribuição de erros</div>
+            <div class="chartWrap"><canvas id="chartErrosShare"></canvas></div>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <div class="boxTitle">Detalhamento</div>
+          <div id="summaryTableOut"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- libs CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    // ==========================================================
+    // Estado (tudo em memória)
+    // ==========================================================
+    let ROUTES = [];        // cada linha vira uma "instância" de rota
+    let EXPANDED_ID = null; // instância aberta
+    let FILE_PERIOD = { min: null, max: null }; // período do arquivo (min início, max término)
+
+    // draft do formulário (pra rota aberta)
+    let DRAFT = {
+      editingId: null,
+      type: "OPERACIONAL", // OPERACIONAL | ENCERRAMENTO
+      description: "",
+      isJustificativa: false,
+      justificativaErrada: "",
+      justificativaCerta: "",
+      usuarioErro: "",
+      images: [], // {id,name,dataUrl}
+      applyMode: "THIS", // THIS | ALL | PICK
+      applyIds: []
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+    function safeStr(v){ return (v === null || v === undefined) ? "" : String(v).trim(); }
+    function toNumberOrNull(v){
+      if(v === null || v === undefined || v === "") return null;
+      if(typeof v === "number") return isNaN(v) ? null : v;
+      const n = Number(String(v).replace(",", "."));
+      return isNaN(n) ? null : n;
+    }
+    function fmtNum(v, digits=3){
+      if(v === null) return "-";
+      return v.toLocaleString("pt-BR", {maximumFractionDigits:digits});
+    }
+    function fmtKm(v){ return v === null ? "-" : (fmtNum(v, 3) + " km"); }
+    function fmtLitros(v){ return v === null ? "-" : (fmtNum(v, 0) + " L"); }
+
+    function inferRouteType(routeName){
+      const s = String(routeName || "").trim();
+      const last = s.slice(-1).toUpperCase();
+      if(["D","R","S","X","Y"].includes(last)) return last;
+      return "UNK";
+    }
+
+    // Converte o que vier (Date/number/string) em texto
+    function toTextDateTime(v){
+      if(v === null || v === undefined || v === "") return "";
+      if(v instanceof Date && !isNaN(v.getTime())) return v.toLocaleString("pt-BR");
+      if(typeof v === "number"){
+        try{
+          const d = XLSX.SSF.parse_date_code(v);
+          if(d){
+            const dd = String(d.d).padStart(2,"0");
+            const mm = String(d.m).padStart(2,"0");
+            const yyyy = String(d.y);
+            const HH = String(d.H || 0).padStart(2,"0");
+            const MM = String(d.M || 0).padStart(2,"0");
+            return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+          }
+        }catch(e){}
+      }
+      return String(v).trim();
+    }
+
+    // Extrai uma data (sem hora) a partir do texto "dd/MM/yyyy ..."
+    function extractDateDDMMYYYY(text){
+      const s = String(text || "");
+      const m = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if(!m) return null;
+      const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
+      const dt = new Date(yyyy, mm-1, dd, 0, 0, 0, 0);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function fmtDDMM(dt){
+      if(!dt) return "";
+      const dd = String(dt.getDate()).padStart(2,"0");
+      const mm = String(dt.getMonth()+1).padStart(2,"0");
+      return `${dd}/${mm}`;
+    }
+
+    function resetDraft(){
+      DRAFT = {
+        editingId: null,
+        type: "OPERACIONAL",
+        description: "",
+        isJustificativa: false,
+        justificativaErrada: "",
+        justificativaCerta: "",
+        usuarioErro: "",
+        images: [],
+        applyMode: "THIS",
+        applyIds: []
+      };
+    }
+
+    function currentRoute(){
+      if(!EXPANDED_ID) return null;
+      return ROUTES.find(r=>r.id===EXPANDED_ID) || null;
+    }
+
+    function computeStats(){
+      const totalRoutes = ROUTES.length;
+      const routesWithErr = ROUTES.filter(r => r.errors.length > 0).length;
+      const totalErrors = ROUTES.reduce((acc,r)=> acc + r.errors.length, 0);
+
+      $("statRoutes").textContent = totalRoutes;
+      $("statRoutesWithErr").textContent = routesWithErr;
+      $("statErrors").textContent = totalErrors;
+
+      // também no Resumo (se existir na tela)
+      const a = document.getElementById("sumStatRoutes");
+      const b = document.getElementById("sumStatRoutesWithErr");
+      const c = document.getElementById("sumStatErrors");
+      if(a) a.textContent = totalRoutes;
+      if(b) b.textContent = routesWithErr;
+      if(c) c.textContent = totalErrors;
+    }
+
+    function filteredRoutes(){
+      const t = $("filterType").value;
+      const s = $("search").value.trim().toLowerCase();
+
+      return ROUTES
+        .filter(r=>{
+          if(t !== "ALL" && r.routeType !== t) return false;
+          if(!s) return true;
+
+          const hay = [
+            r.routeName, r.routeType, r.status, r.kmStatus,
+            r.eventos, r.motoristas, r.placa, r.obs2, r.inicioText, r.terminoText
+          ].join(" ").toLowerCase();
+
+          return hay.includes(s);
+        })
+        .sort((a,b)=>{
+          // ordena por rota e depois por início (pra lidar com repetição)
+          const c = a.routeName.localeCompare(b.routeName,"pt-BR",{numeric:true});
+          if(c !== 0) return c;
+          const da = extractDateDDMMYYYY(a.inicioText) || new Date(0);
+          const db = extractDateDDMMYYYY(b.inicioText) || new Date(0);
+          return da - db;
+        });
+    }
+
+    // ==========================================================
+    // Import Excel (e calcula período do arquivo)
+    // ==========================================================
+    async function importExcel(file){
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:"array", cellDates:true});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {defval:"", raw:true});
+
+      const mapped = rows
+        .filter(row => safeStr(row["Roteiro"]) !== "")
+        .map(row => {
+          const routeName = safeStr(row["Roteiro"]);
+          const inicioText = toTextDateTime(row["Início"]);
+          const terminoText = toTextDateTime(row["Término real"]);
+
+          return {
+            id: uid(), // id único por instância (resolve rota repetida)
+            routeName,
+            routeType: inferRouteType(routeName),
+
+            inicioText,
+            terminoText,
+
+            kmPrevisto: toNumberOrNull(row["KM previsto"]),
+            kmRodado: toNumberOrNull(row["KM rodado"]),
+            kmJustificado: toNumberOrNull(row["KM justificado"]),
+            kmDiferenca: toNumberOrNull(row["KM diferença"]),
+
+            kmStatus: safeStr(row["KM status"]),
+            obs2: safeStr(row["Observação 2"]),
+            status: safeStr(row["Status"]),
+            eventos: safeStr(row["Eventos"]),
+
+            litrosColetados: toNumberOrNull(row["Litros coletados"]),
+            litrosDescarregados: toNumberOrNull(row["Litros descarregados"]),
+            motoristas: safeStr(row["Motoristas coleta"]),
+
+            placa: safeStr(row["Placa"]),
+
+            errors: []
+          };
+        });
+
+      ROUTES = mapped;
+      EXPANDED_ID = null;
+      resetDraft();
+
+      // período do arquivo: min(Início) e max(Término real)
+      let minD = null, maxD = null;
+      for(const r of ROUTES){
+        const di = extractDateDDMMYYYY(r.inicioText);
+        const dt = extractDateDDMMYYYY(r.terminoText);
+        if(di && (!minD || di < minD)) minD = di;
+        if(dt && (!maxD || dt > maxD)) maxD = dt;
+      }
+      FILE_PERIOD = { min: minD, max: maxD };
+
+      // se o usuário estiver no Resumo, tenta preencher período automático
+      const resumoEl = document.getElementById("resumoTab");
+      if(resumoEl && resumoEl.classList.contains("active")){
+        try{ syncSummaryDefaults(); }catch(e){}
+      }
+
+      render();
+    }
+
+    // ==========================================================
+    // Imagens (Ctrl+V / Drag&Drop / File)
+    // ==========================================================
+    function fileToDataUrl(file){
+      return new Promise((resolve,reject)=>{
+        const r = new FileReader();
+        r.onerror = ()=>reject(new Error("Falha ao ler imagem"));
+        r.onload = ()=>resolve(String(r.result||""));
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function addImagesFromFiles(fileList){
+      if(!fileList || !fileList.length) return;
+      const imgs = [];
+      for(const f of Array.from(fileList)){
+        if(!f.type.startsWith("image/")) continue;
+        const dataUrl = await fileToDataUrl(f);
+        imgs.push({id:uid(), name:f.name || ("imagem_"+Date.now()+".png"), dataUrl});
+      }
+      DRAFT.images = DRAFT.images.concat(imgs);
+      render(); // re-render rota aberta
+    }
+
+    async function onPasteImages(ev){
+      const items = ev.clipboardData && ev.clipboardData.items ? Array.from(ev.clipboardData.items) : [];
+      const files = [];
+      items.forEach(it=>{
+        if(it.type && it.type.startsWith("image/")){
+          const f = it.getAsFile();
+          if(f) files.push(f);
+        }
+      });
+      if(files.length){
+        ev.preventDefault();
+        await addImagesFromFiles(files);
+      }
+    }
+
+    function removeDraftImage(imgId){
+      DRAFT.images = DRAFT.images.filter(i=>i.id!==imgId);
+      render();
+    }
+
+    // ==========================================================
+    // CRUD de erros (sem OK/Pendente)
+    // ==========================================================
+    function submitError(){
+      const r = currentRoute();
+      if(!r) return;
+
+      const desc = DRAFT.description.trim();
+      if(!desc){ alert("Descreva o problema (descrição/observação)."); return; }
+
+      if(DRAFT.isJustificativa){
+        if(!DRAFT.justificativaErrada.trim() || !DRAFT.justificativaCerta.trim() || !DRAFT.usuarioErro.trim()){
+          alert("Se for Justificativa, preencha: errada, certa e usuário.");
+          return;
+        }
+      }
+
+      const id = DRAFT.editingId || uid();
+      const newErr = {
+        id,
+        type: DRAFT.type, // OPERACIONAL/ENCERRAMENTO
+        description: desc,
+        isJustificativa: DRAFT.isJustificativa,
+        justificativaErrada: DRAFT.isJustificativa ? DRAFT.justificativaErrada.trim() : "",
+        justificativaCerta: DRAFT.isJustificativa ? DRAFT.justificativaCerta.trim() : "",
+        usuarioErro: DRAFT.isJustificativa ? DRAFT.usuarioErro.trim() : "",
+        images: DRAFT.images.slice()
+      };
+
+      if(DRAFT.editingId){
+        r.errors = r.errors.map(e => e.id===id ? newErr : e);
+      }else{
+    // Aplicar em mais de um dia (mesma rota)
+    let targets = [r];
+
+    if(DRAFT.applyMode === "ALL"){
+      targets = ROUTES.filter(x => x.routeName === r.routeName);
+    }else if(DRAFT.applyMode === "PICK"){
+      const set = new Set((DRAFT.applyIds || []).filter(Boolean));
+      if(!set.size){
+        alert("Selecione ao menos um dia para aplicar o erro.");
+        return;
+      }
+      targets = ROUTES.filter(x => set.has(x.id));
+    }
+
+    for(const tr of targets){
+      const clonedImgs = (DRAFT.images || []).map(img => ({
+        id: uid(),
+        name: img.name || ("imagem_"+Date.now()+".png"),
+        dataUrl: img.dataUrl
+      }));
+
+      tr.errors.push({
+        ...newErr,
+        id: uid(),
+        images: clonedImgs
+      });
+    }
+  }
+
+      resetDraft();
+      render();
+    }
+
+    function editError(errId){
+      const r = currentRoute();
+      if(!r) return;
+      const e = r.errors.find(x=>x.id===errId);
+      if(!e) return;
+
+      DRAFT.editingId = e.id;
+      DRAFT.type = e.type;
+      DRAFT.description = e.description;
+      DRAFT.isJustificativa = !!e.isJustificativa;
+      DRAFT.justificativaErrada = e.justificativaErrada || "";
+      DRAFT.justificativaCerta = e.justificativaCerta || "";
+      DRAFT.usuarioErro = e.usuarioErro || "";
+      DRAFT.images = (e.images || []).slice();
+
+      render();
+    }
+
+
+function replicateError(errId){
+  const r = currentRoute();
+  if(!r) return;
+  const e = r.errors.find(x=>x.id===errId);
+  if(!e) return;
+
+  // Preenche o formulário com o mesmo erro, mas para aplicar em outras ocorrências
+  resetDraft();
+  DRAFT.type = e.type;
+  DRAFT.description = e.description || "";
+  DRAFT.isJustificativa = !!e.isJustificativa;
+  DRAFT.justificativaErrada = e.justificativaErrada || "";
+  DRAFT.justificativaCerta = e.justificativaCerta || "";
+  DRAFT.usuarioErro = e.usuarioErro || "";
+  DRAFT.images = (e.images || []).map(img => ({
+    id: uid(),
+    name: img.name || ("imagem_"+Date.now()+".png"),
+    dataUrl: img.dataUrl
+  }));
+
+  // por padrão: seleciona as outras ocorrências (não duplica no dia atual)
+  const others = ROUTES.filter(x => x.routeName === r.routeName && x.id !== r.id);
+  DRAFT.applyMode = "PICK";
+  DRAFT.applyIds = others.map(x=>x.id);
+
+  render();
+}
+    function removeError(errId){
+      const r = currentRoute();
+      if(!r) return;
+      r.errors = r.errors.filter(e=>e.id!==errId);
+      if(DRAFT.editingId === errId) resetDraft();
+      render();
+    }
+
+    // ==========================================================
+    // DOCX (Relatório bonito, só rotas com erro)
+    // - sem Tipo
+    // - sem data/hora registro
+    // - sem qtd imagens
+    // - sem nome de imagem (só imagem)
+    // - com período do arquivo no topo
+    // - suporta rotas repetidas (cada instância vira seção)
+    // ==========================================================
+    function dataUrlToUint8Array(dataUrl){
+      const base64 = (dataUrl.split(",")[1] || "");
+      const bin = atob(base64);
+      const bytes = new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+      return bytes;
+    }
+
+    function softCardTable(docx, rows){
+      // tabela leve, sem cara de "planilha"
+      const { Table, TableRow, TableCell, Paragraph, TextRun, WidthType, BorderStyle } = docx;
+
+      const noBorder = {
+        top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+        bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+        left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+        right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      };
+
+      return new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        rows: rows.map(([k,v],idx)=>{
+          const fill = idx % 2 ? "F4F7FF" : "FFFFFF";
+          return new TableRow({
+            children: [
+              new TableCell({
+                borders: noBorder,
+                shading: { fill, color:"FFFFFF" },
+                width: { size: 38, type: WidthType.PERCENTAGE },
+                children: [ new Paragraph({
+                  children: [ new TextRun({ text: k, bold: true, size: 22, color: "1D4ED8" }) ]
+                }) ]
+              }),
+              new TableCell({
+                borders: noBorder,
+                shading: { fill, color:"FFFFFF" },
+                width: { size: 62, type: WidthType.PERCENTAGE },
+                children: [ new Paragraph({
+                  children: [ new TextRun({ text: (v || "-"), size: 22, color: "0B1A33" }) ]
+                }) ]
+              })
+            ]
+          });
+        })
+      });
+    }
+
+    async function generateDoc(){
+      if(!ROUTES.length){
+        alert("Importe um arquivo antes.");
+        return;
+      }
+
+      const routesWithErr = ROUTES.filter(r => r.errors.length > 0);
+      if(!routesWithErr.length){
+        alert("Não há erros adicionados. O relatório só é gerado para rotas com erro.");
+        return;
+      }
+
+      const docx = window.docx;
+      const {
+        Document, Packer, Paragraph, TextRun, HeadingLevel,
+        AlignmentType, ImageRun
+      } = docx;
+
+      const children = [];
+
+      // capa/título
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "Relatório de Auditoria de Rotas", bold: true, size: 36, color: "1D4ED8" })
+        ],
+        spacing: { after: 180 }
+      }));
+
+      // período (do arquivo)
+      const per = (FILE_PERIOD.min && FILE_PERIOD.max) ? `${fmtDDMM(FILE_PERIOD.min)} - ${fmtDDMM(FILE_PERIOD.max)}` : "—";
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: "Período: ", bold: true, size: 24, color: "0B1A33" }),
+          new TextRun({ text: per, size: 24, color: "0B1A33" })
+        ],
+        spacing: { after: 240 }
+      }));
+
+      // resumo
+      const totalErrors = routesWithErr.reduce((acc,r)=> acc + r.errors.length, 0);
+      children.push(softCardTable(docx, [
+        ["Rotas com erro", String(routesWithErr.length)],
+        ["Total de erros", String(totalErrors)]
+      ]));
+      children.push(new Paragraph({ text: "", spacing:{ after: 240 } }));
+
+      // cada instância de rota vira uma seção (Heading 1 => recolhível)
+      for(const r of routesWithErr){
+        // título da rota: só o nome (sem "Tipo")
+        children.push(new Paragraph({
+          text: r.routeName,
+          heading: HeadingLevel.HEADING_1,
+          spacing: { before: 220, after: 120 }
+        }));
+
+        // detalhes da rota (sem cara de planilha pesada)
+        children.push(softCardTable(docx, [
+          ["Início", r.inicioText || "-"],
+          ["Término real", r.terminoText || "-"],
+          ["Status", r.status || "-"],
+          ["KM previsto", fmtKm(r.kmPrevisto)],
+          ["KM rodado", fmtKm(r.kmRodado)],
+          ["KM diferença", fmtKm(r.kmDiferenca)],
+          ["Eventos", r.eventos || "-"],
+          ["Motoristas", r.motoristas || "-"],
+          ["Placa", r.placa || "-"],
+        ]));
+        children.push(new Paragraph({ text: "", spacing:{ after: 200 } }));
+
+        // erros
+        children.push(new Paragraph({
+          children: [ new TextRun({ text: "Erros", bold: true, size: 28, color: "1D4ED8" }) ],
+          spacing: { after: 120 }
+        }));
+
+        for(let i=0;i<r.errors.length;i++){
+          const e = r.errors[i];
+
+          // título do erro (Heading 2 => recolhível)
+          const errLabel = `Erro ${i+1} — ${e.type === "OPERACIONAL" ? "Operacional" : "Encerramento"}`;
+          children.push(new Paragraph({
+            text: errLabel,
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 160, after: 80 }
+          }));
+
+          // corpo do erro (descrição + justificativa se tiver)
+          const info = [
+            ["Descrição", e.description],
+            ["Justificativa?", e.isJustificativa ? "Sim" : "Não"],
+          ];
+          if(e.isJustificativa){
+            info.push(["Justificativa errada", e.justificativaErrada || "-"]);
+            info.push(["Justificativa certa", e.justificativaCerta || "-"]);
+            info.push(["Usuário", e.usuarioErro || "-"]);
+          }
+
+          children.push(softCardTable(docx, info));
+          children.push(new Paragraph({ text: "", spacing:{ after: 120 } }));
+
+          // imagens: sem nome e sem qtd (só a imagem)
+          if(e.images && e.images.length){
+            for(const img of e.images){
+              try{
+                const bytes = dataUrlToUint8Array(img.dataUrl);
+                children.push(new Paragraph({
+                  alignment: AlignmentType.LEFT,
+                  children: [
+                    new ImageRun({
+                      data: bytes,
+                      transformation: { width: 520, height: 320 }
+                    })
+                  ],
+                  spacing: { after: 140 }
+                }));
+              }catch(err){
+                // se falhar, só ignora silencioso (sem poluir)
+              }
+            }
+          }
+        }
+
+        children.push(new Paragraph({ text: "", spacing:{ after: 260 } }));
+      }
+
+      const doc = new Document({ sections:[{ children }] });
+      const blob = await Packer.toBlob(doc);
+
+      const yyyy = new Date().getFullYear();
+      const mm = String(new Date().getMonth()+1).padStart(2,"0");
+      const dd = String(new Date().getDate()).padStart(2,"0");
+      saveAs(blob, `RELATORIO_AUDITORIA_${yyyy}-${mm}-${dd}.docx`);
+    }
+
+    // ==========================================================
+    // Render
+    // ==========================================================
+    function render(){
+      computeStats();
+
+      const list = $("list");
+      list.innerHTML = "";
+
+      const arr = filteredRoutes();
+      if(!arr.length){
+        list.innerHTML = `<div class="panel">Nenhuma rota pra mostrar. Importe um arquivo e/ou ajuste filtros.</div>`;
+        return;
+      }
+
+      arr.forEach(r=>{
+        const errCount = r.errors.length;
+
+        const route = document.createElement("div");
+        route.className = "route";
+
+        const head = document.createElement("div");
+        head.className = "routeHead";
+
+        const left = document.createElement("div");
+        left.style.minWidth = "0";
+
+        // Se rota repetida: mostramos "Início/Término" no card (já aparece), e internamente é instância única
+        left.innerHTML = `
+          <div class="routeTitle">
+            ${escapeHtml(r.routeName)}
+            <span class="pill">Erros: ${errCount}</span>
+            ${r.placa ? `<span class="pill">Placa: ${escapeHtml(r.placa)}</span>` : ``}
+          </div>
+
+          <div class="routeMeta">
+            <div><div class="k">Início</div><div class="v">${escapeHtml(r.inicioText || "-")}</div></div>
+            <div><div class="k">Término real</div><div class="v">${escapeHtml(r.terminoText || "-")}</div></div>
+            <div><div class="k">Eventos</div><div class="v">${escapeHtml(r.eventos || "-")}</div></div>
+          </div>
+
+          <div class="routeMeta" style="margin-top:10px">
+            <div><div class="k">KM previsto</div><div class="v">${escapeHtml(fmtKm(r.kmPrevisto))}</div></div>
+            <div><div class="k">KM rodado</div><div class="v">${escapeHtml(fmtKm(r.kmRodado))}</div></div>
+            <div><div class="k">KM diferença</div><div class="v">${escapeHtml(fmtKm(r.kmDiferenca))}</div></div>
+          </div>
+
+          <div class="routeMeta" style="margin-top:10px">
+            <div><div class="k">Motoristas</div><div class="v">${escapeHtml(r.motoristas || "-")}</div></div>
+            <div><div class="k">Status</div><div class="v">${escapeHtml(r.status || "-")}</div></div>
+            <div><div class="k">Observação 2</div><div class="v">${escapeHtml(r.obs2 || "-")}</div></div>
+          </div>
+        `;
+
+        const right = document.createElement("div");
+        const isOpen = (EXPANDED_ID === r.id);
+        right.innerHTML = `<span class="chip">${isOpen ? "Recolher ▲" : "Expandir ▼"}</span>`;
+
+        head.appendChild(left);
+        head.appendChild(right);
+
+        head.onclick = ()=>{
+          if(EXPANDED_ID === r.id){
+            EXPANDED_ID = null;
+            resetDraft();
+          }else{
+            EXPANDED_ID = r.id;
+            resetDraft();
+          }
+          render();
+        };
+
+        const bodyWrap = document.createElement("div");
+        bodyWrap.className = "routeBodyWrap" + (isOpen ? " open" : "");
+
+        const body = document.createElement("div");
+        body.className = "routeBody";
+        if(isOpen) body.appendChild(renderRouteBody(r));
+
+        bodyWrap.appendChild(body);
+
+        route.appendChild(head);
+        route.appendChild(bodyWrap);
+        list.appendChild(route);
+      });
+    }
+
+    function renderRouteBody(r){
+      const wrap = document.createElement("div");
+      wrap.className = "twoCols";
+
+      // esquerda: detalhes + lista erros
+      const left = document.createElement("div");
+      left.className = "box";
+      left.innerHTML = `
+        <div class="boxTitle">Erros desta rota</div>
+        <div id="errorsArea"></div>
+      `;
+
+      const errorsArea = left.querySelector("#errorsArea");
+
+      if(!r.errors.length){
+        errorsArea.innerHTML = `
+          <div class="kvc" style="background: var(--panel2); border-color: var(--line);">
+            <div class="k">Status</div>
+            <div class="v">Nenhum erro registrado ainda</div>
+          </div>
+        `;
+      }else{
+        const box = document.createElement("div");
+        box.className = "errors";
+
+        r.errors.forEach((e, idx)=>{
+          const card = document.createElement("div");
+          card.className = "err";
+
+          card.innerHTML = `
+            <div class="errTop">
+              <div style="min-width:0">
+                <div class="errTitle">#${idx+1} — ${e.type === "OPERACIONAL" ? "Erro Operacional" : "Erro de Encerramento"}</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end">
+                <button class="btn small ghost" data-act="edit">Editar</button>
+                <button class="btn small ghost" data-act="rep">Replicar</button>
+                <button class="btn small danger" data-act="del">Remover</button>
+              </div>
+            </div>
+
+            <div class="errDesc">${escapeHtml(e.description)}</div>
+
+            ${
+              e.isJustificativa ? `
+              <div class="errMini">
+                <div class="kvc"><div class="k">Justificativa errada</div><div class="v">${escapeHtml(e.justificativaErrada || "-")}</div></div>
+                <div class="kvc"><div class="k">Justificativa certa</div><div class="v">${escapeHtml(e.justificativaCerta || "-")}</div></div>
+                <div class="kvc"><div class="k">Usuário</div><div class="v">${escapeHtml(e.usuarioErro || "-")}</div></div>
+              </div>
+              ` : ``
+            }
+
+            ${
+              (e.images && e.images.length) ? `
+              <div class="thumbs">
+                ${e.images.map(img=>`
+                  <div class="thumb">
+                    <img src="${img.dataUrl}" alt="">
+                  </div>
+                `).join("")}
+              </div>
+              ` : ``
+            }
+          `;
+
+          card.querySelector('[data-act="edit"]').onclick = (ev)=>{ ev.stopPropagation(); editError(e.id); };
+card.querySelector('[data-act="rep"]').onclick = (ev)=>{ ev.stopPropagation(); replicateError(e.id); };
+card.querySelector('[data-act="del"]').onclick = (ev)=>{ ev.stopPropagation(); removeError(e.id); };
+
+          box.appendChild(card);
+        });
+
+        errorsArea.appendChild(box);
+      }
+
+      // direita: formulário
+      const right = document.createElement("div");
+      right.className = "box";
+
+      right.innerHTML = `
+        <div class="boxTitle">${DRAFT.editingId ? "Editar erro" : "Adicionar erro"}</div>
+
+        <div class="grid2">
+          <div>
+            <label>Tipo do erro</label>
+            <select id="fType">
+              <option value="OPERACIONAL">Erro Operacional</option>
+              <option value="ENCERRAMENTO">Erro de Encerramento</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end; justify-content:flex-end">
+            ${DRAFT.editingId ? `<button id="btnCancelEdit" class="btn ghost">Cancelar edição</button>` : ``}
+          </div>
+        </div>
+
+        
+${!DRAFT.editingId ? `
+<div style="margin-top:10px">
+  <label>Aplicar este erro em</label>
+  <select id="fApply">
+    <option value="THIS">Somente este dia</option>
+    <option value="ALL">Todos os dias desta rota</option>
+    <option value="PICK">Selecionar dias...</option>
+  </select>
+
+  <div id="applyList" style="margin-top:10px; display:none">
+    <div class="panel" style="box-shadow:none; margin:0; border-radius:18px; background: var(--panel2); padding:12px">
+      <div class="hint" style="margin:0 0 8px 0">Marque as ocorrências (dias) desta rota:</div>
+      <div id="applyItems"></div>
+    </div>
+  </div>
+</div>
+` : ``}
+<div style="margin-top:10px">
+          <label>Descrição / Observação</label>
+          <textarea id="fDesc" placeholder="Explique o problema encontrado..."></textarea>
+        </div>
+
+        <div class="toggleRow" style="margin-top:10px">
+          <div>
+            <div class="t1">Justificativa?</div>
+            <div class="t2">Marque se a justificativa lançada por alguém está errada.</div>
+          </div>
+          <input id="fJust" type="checkbox" style="width:18px;height:18px; accent-color: var(--blue2);" />
+        </div>
+
+        <div id="justArea" style="margin-top:10px; display:none">
+          <div class="panel" style="box-shadow:none; margin:0; border-radius:18px; background: var(--panel2);">
+            <div class="grid2">
+              <div>
+                <label>Justificativa errada</label>
+                <input id="fJe" type="text" placeholder="Ex: Falha de sinal" />
+              </div>
+              <div>
+                <label>Justificativa certa</label>
+                <input id="fJc" type="text" placeholder="Ex: Desvio operacional..." />
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label>Usuário que lançou errado</label>
+              <input id="fUser" type="text" placeholder="Nome do usuário" />
+            </div>
+          </div>
+        </div>
+
+        <div class="drop" id="dropZone" style="margin-top:10px" tabindex="0">
+          <div style="font-weight:950; color: var(--blue)">Imagens</div>
+          <div class="hint" style="margin-top:4px">
+            Clique aqui e cole com <b>Ctrl+V</b>, ou arraste imagens, ou selecione arquivo.
+          </div>
+          <div style="margin-top:10px">
+            <input id="fImgs" type="file" accept="image/*" multiple />
+          </div>
+          <div id="imgPreview" class="imgList"></div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:12px">
+          <button id="btnSave" class="btn" style="flex:1">${DRAFT.editingId ? "Salvar alterações" : "Confirmar erro"}</button>
+          <button id="btnClear" class="btn ghost">Limpar</button>
+        </div>
+      `;
+
+      // bind inputs
+      const fType = right.querySelector("#fType");
+      const fDesc = right.querySelector("#fDesc");
+      const fJust = right.querySelector("#fJust");
+      const justArea = right.querySelector("#justArea");
+      const fJe = right.querySelector("#fJe");
+      const fJc = right.querySelector("#fJc");
+      const fUser = right.querySelector("#fUser");
+      const fImgs = right.querySelector("#fImgs");
+      const dropZone = right.querySelector("#dropZone");
+      const imgPreview = right.querySelector("#imgPreview");
+// aplicar em múltiplos dias (mesma rota)
+const fApply = right.querySelector("#fApply");
+const applyList = right.querySelector("#applyList");
+const applyItems = right.querySelector("#applyItems");
+
+if(fApply){
+  // default: sempre inclui a ocorrência atual se ainda não tiver nada selecionado
+  if(!Array.isArray(DRAFT.applyIds) || !DRAFT.applyIds.length){
+    DRAFT.applyIds = [r.id];
+  }
+
+  fApply.value = DRAFT.applyMode || "THIS";
+
+  const same = ROUTES
+    .filter(x => x.routeName === r.routeName)
+    .sort((a,b)=>{
+      const da = extractDateDDMMYYYY(a.inicioText) || new Date(0);
+      const db = extractDateDDMMYYYY(b.inicioText) || new Date(0);
+      return da - db;
+    });
+
+  function renderApplyList(){
+    if(!applyItems) return;
+    applyItems.innerHTML = same.map(sr=>{
+      const checked = (DRAFT.applyIds || []).includes(sr.id) ? "checked" : "";
+      const placa = sr.placa ? escapeHtml(sr.placa) : "-";
+      return `
+        <label style="display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border:1px solid var(--line); border-radius:14px; background:#fff; margin-bottom:8px; cursor:pointer">
+          <input type="checkbox" data-apply-id="${sr.id}" ${checked}
+            style="width:18px;height:18px; margin-top:2px; accent-color: var(--blue2);" />
+          <div style="min-width:0">
+            <div style="font-weight:950; letter-spacing:-.01em">${escapeHtml(sr.inicioText || "-")} → ${escapeHtml(sr.terminoText || "-")}</div>
+            <div style="font-size:12px; color: var(--muted); font-weight:800">Placa: ${placa}</div>
+          </div>
+        </label>
+      `;
+    }).join("");
+
+    applyItems.querySelectorAll('input[type="checkbox"][data-apply-id]').forEach(cb=>{
+      cb.onchange = ()=>{
+        const id = cb.getAttribute("data-apply-id");
+        const set = new Set(DRAFT.applyIds || []);
+        if(cb.checked) set.add(id);
+        else set.delete(id);
+        DRAFT.applyIds = Array.from(set);
+      };
+    });
+  }
+
+  function syncApplyUI(){
+    const mode = fApply.value;
+    DRAFT.applyMode = mode;
+
+    if(!applyList) return;
+    if(mode === "PICK"){
+      applyList.style.display = "block";
+      renderApplyList();
+    }else{
+      applyList.style.display = "none";
+    }
+  }
+
+  fApply.onchange = syncApplyUI;
+  syncApplyUI();
+}
+
+
+      fType.value = DRAFT.type;
+      fDesc.value = DRAFT.description;
+      fJust.checked = DRAFT.isJustificativa;
+      justArea.style.display = DRAFT.isJustificativa ? "block" : "none";
+      if(fJe) fJe.value = DRAFT.justificativaErrada;
+      if(fJc) fJc.value = DRAFT.justificativaCerta;
+      if(fUser) fUser.value = DRAFT.usuarioErro;
+
+      fType.onchange = ()=>{ DRAFT.type = fType.value; };
+      fDesc.oninput = ()=>{ DRAFT.description = fDesc.value; };
+      fJust.onchange = ()=>{
+        DRAFT.isJustificativa = fJust.checked;
+        justArea.style.display = DRAFT.isJustificativa ? "block" : "none";
+      };
+      if(fJe) fJe.oninput = ()=>{ DRAFT.justificativaErrada = fJe.value; };
+      if(fJc) fJc.oninput = ()=>{ DRAFT.justificativaCerta = fJc.value; };
+      if(fUser) fUser.oninput = ()=>{ DRAFT.usuarioErro = fUser.value; };
+
+      // paste images
+      dropZone.addEventListener("paste", onPasteImages);
+
+      // drag drop images
+      dropZone.addEventListener("dragover", (e)=>{ e.preventDefault(); });
+      dropZone.addEventListener("drop", async (e)=>{
+        e.preventDefault();
+        await addImagesFromFiles(e.dataTransfer.files);
+      });
+
+      // file picker images
+      fImgs.onchange = async ()=>{
+        await addImagesFromFiles(fImgs.files);
+        fImgs.value = "";
+      };
+
+      // preview images
+      imgPreview.innerHTML = (DRAFT.images || []).map(img => `
+        <div class="imgItem">
+          <img src="${img.dataUrl}" alt="">
+          <div class="foot">
+            <span title="${escapeHtml(img.name)}">${escapeHtml(img.name)}</span>
+            <button class="btn small danger" data-img="${img.id}">X</button>
+          </div>
+        </div>
+      `).join("");
+
+      imgPreview.querySelectorAll("button[data-img]").forEach(btn=>{
+        btn.onclick = (ev)=>{
+          ev.preventDefault(); ev.stopPropagation();
+          removeDraftImage(btn.getAttribute("data-img"));
+        };
+      });
+
+      // buttons
+      right.querySelector("#btnSave").onclick = (ev)=>{ ev.preventDefault(); submitError(); };
+      right.querySelector("#btnClear").onclick = (ev)=>{ ev.preventDefault(); resetDraft(); render(); };
+
+      const btnCancelEdit = right.querySelector("#btnCancelEdit");
+      if(btnCancelEdit){
+        btnCancelEdit.onclick = (ev)=>{ ev.preventDefault(); resetDraft(); render(); };
+      }
+
+      wrap.appendChild(left);
+      wrap.appendChild(right);
+      return wrap;
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, (c)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+
+    // ==========================================================
+    // Tabs (Auditoria / Resumo)
+    // ==========================================================
+    function setActiveTab(tabId){
+      document.querySelectorAll(".tabPage").forEach(p=>{
+        p.classList.toggle("active", p.id === tabId);
+      });
+
+      document.querySelectorAll(".tabBtn").forEach(b=>{
+        const active = (b.getAttribute("data-tab") === tabId);
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-selected", active ? "true" : "false");
+      });
+
+      document.querySelectorAll("[data-only]").forEach(el=>{
+        const only = el.getAttribute("data-only");
+        if(only === "auditoria" && tabId !== "auditoriaTab") el.style.display = "none";
+        else if(only === "resumo" && tabId !== "resumoTab") el.style.display = "none";
+        else el.style.display = "";
+      });
+
+      if(tabId === "resumoTab"){
+        bindSummaryEvents();
+        syncSummaryDefaults();
+      }
+    }
+
+    // ==========================================================
+    // Resumo (BI) — estado + UI
+    // ==========================================================
+    const LS_SUMMARY_KEY = "AUDITORIA_RESUMO_V1";
+
+    let SUMMARY = {
+      startISO: "",
+      endISO: "",
+      titleNote: "",
+      branches: []
+    };
+
+    let SUMMARY_BOUND = false;
+    let SUMMARY_CHART_BAR = null;
+    let SUMMARY_CHART_DONUT = null;
+
+    function defaultBranch(){
+      return { id: uid(), filial:"", responsavel:"", status:"", rotas:"", erros:"" };
+    }
+
+    function loadSummary(){
+      try{
+        const raw = localStorage.getItem(LS_SUMMARY_KEY);
+        if(raw){
+          const obj = JSON.parse(raw);
+          if(obj && typeof obj === "object"){
+            SUMMARY = {
+              startISO: safeStr(obj.startISO),
+              endISO: safeStr(obj.endISO),
+              titleNote: safeStr(obj.titleNote),
+              branches: Array.isArray(obj.branches)
+                ? obj.branches.map(b=>({
+                    id: b.id || uid(),
+                    filial: safeStr(b.filial),
+                    responsavel: safeStr(b.responsavel),
+                    status: safeStr(b.status),
+                    rotas: (b.rotas ?? ""),
+                    erros: (b.erros ?? "")
+                  }))
+                : []
+            };
+          }
+        }
+      }catch(e){}
+      if(!SUMMARY.branches.length) SUMMARY.branches = [defaultBranch()];
+    }
+
+    function saveSummary(){
+      try{ localStorage.setItem(LS_SUMMARY_KEY, JSON.stringify(SUMMARY)); }catch(e){}
+    }
+
+    function toISODate(dt){
+      if(!(dt instanceof Date) || isNaN(dt.getTime())) return "";
+      const yyyy = dt.getFullYear();
+      const mm = String(dt.getMonth()+1).padStart(2,"0");
+      const dd = String(dt.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function fmtBRFromISO(iso){
+      const s = safeStr(iso);
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(!m) return s || "";
+      return `${m[3]}/${m[2]}/${m[1]}`;
+    }
+
+    function hideSummaryOutput(){
+      const out = $("summaryOutput");
+      if(out) out.style.display = "none";
+      if(SUMMARY_CHART_BAR){ try{ SUMMARY_CHART_BAR.destroy(); }catch(e){} SUMMARY_CHART_BAR = null; }
+      if(SUMMARY_CHART_DONUT){ try{ SUMMARY_CHART_DONUT.destroy(); }catch(e){} SUMMARY_CHART_DONUT = null; }
+    }
+
+    function syncSummaryDefaults(){
+      // tenta preencher período com base no arquivo importado
+      if(!SUMMARY.startISO && FILE_PERIOD.min) SUMMARY.startISO = toISODate(FILE_PERIOD.min);
+      if(!SUMMARY.endISO && FILE_PERIOD.max) SUMMARY.endISO = toISODate(FILE_PERIOD.max);
+
+      const s = $("sumStart");
+      const e = $("sumEnd");
+      const t = $("sumTitleNote");
+
+      if(s) s.value = SUMMARY.startISO || "";
+      if(e) e.value = SUMMARY.endISO || "";
+      if(t) t.value = SUMMARY.titleNote || "";
+
+      renderBranchTable();
+      computeStats(); // atualiza chips do Resumo também
+    }
+
+    function bindSummaryEvents(){
+      if(SUMMARY_BOUND) return;
+      SUMMARY_BOUND = true;
+
+      const s = $("sumStart");
+      const e = $("sumEnd");
+      const t = $("sumTitleNote");
+
+      if(s) s.addEventListener("change", ()=>{ SUMMARY.startISO = s.value || ""; saveSummary(); });
+      if(e) e.addEventListener("change", ()=>{ SUMMARY.endISO = e.value || ""; saveSummary(); });
+      if(t) t.addEventListener("input", ()=>{ SUMMARY.titleNote = t.value || ""; saveSummary(); });
+
+      const btnAdd = $("btnAddBranch");
+      if(btnAdd) btnAdd.addEventListener("click", (ev)=>{
+        ev.preventDefault();
+        SUMMARY.branches.push(defaultBranch());
+        saveSummary();
+        renderBranchTable();
+      });
+
+      const btnGen = $("btnGenerateSummary");
+      if(btnGen) btnGen.addEventListener("click", (ev)=>{ ev.preventDefault(); generateSummaryDashboard(); });
+
+      const btnClr = $("btnClearSummary");
+      if(btnClr) btnClr.addEventListener("click", (ev)=>{
+        ev.preventDefault();
+        const ok = confirm("Limpar todos os dados do Resumo?");
+        if(!ok) return;
+        SUMMARY = { startISO:"", endISO:"", titleNote:"", branches:[defaultBranch()] };
+        saveSummary();
+        syncSummaryDefaults();
+        hideSummaryOutput();
+      });
+
+      const btnPrint = $("btnPrintSummary");
+      if(btnPrint) btnPrint.addEventListener("click", (ev)=>{ ev.preventDefault(); window.print(); });
+    }
+
+    function renderBranchTable(){
+      const el = $("branchTable");
+      if(!el) return;
+
+      const rows = SUMMARY.branches || [];
+      el.innerHTML = `
+        <div class="bHead">
+          <div>Filial</div>
+          <div>Responsável</div>
+          <div>Status</div>
+          <div style="text-align:right">Rotas</div>
+          <div style="text-align:right">Erros</div>
+          <div></div>
+        </div>
+        <div class="bBody">
+          ${rows.map(r=>`
+            <div class="bRow" data-id="${escapeHtml(r.id)}">
+              <input type="text" placeholder="Ex: MONTES CLAROS" value="${escapeHtml(r.filial||"")}" data-k="filial" />
+              <input type="text" placeholder="Ex: Fulano de Tal" value="${escapeHtml(r.responsavel||"")}" data-k="responsavel" />
+              <input type="text" placeholder="Ex: Em andamento" value="${escapeHtml(r.status||"")}" data-k="status" />
+              <input type="number" min="0" step="1" placeholder="0" value="${escapeHtml(String(r.rotas ?? ""))}" data-k="rotas" />
+              <input type="number" min="0" step="1" placeholder="0" value="${escapeHtml(String(r.erros ?? ""))}" data-k="erros" />
+              <button class="btn small danger" data-act="remove">Remover</button>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      el.querySelectorAll(".bRow").forEach(rowEl=>{
+        const id = rowEl.getAttribute("data-id");
+        const obj = SUMMARY.branches.find(b=>b.id===id);
+        if(!obj) return;
+
+        rowEl.querySelectorAll("input[data-k]").forEach(inp=>{
+          const key = inp.getAttribute("data-k");
+          inp.addEventListener("input", ()=>{
+            obj[key] = inp.value;
+            saveSummary();
+          });
+        });
+
+        const btn = rowEl.querySelector('button[data-act="remove"]');
+        btn.addEventListener("click", (ev)=>{
+          ev.preventDefault(); ev.stopPropagation();
+          SUMMARY.branches = SUMMARY.branches.filter(b=>b.id!==id);
+          if(!SUMMARY.branches.length) SUMMARY.branches = [defaultBranch()];
+          saveSummary();
+          renderBranchTable();
+        });
+      });
+    }
+
+    function hexToRgba(hex, a){
+      let x = String(hex || "").trim();
+      if(!x) return `rgba(37,99,235,${a})`;
+      x = x.startsWith("#") ? x.slice(1) : x;
+      if(x.length === 3) x = x.split("").map(c=>c+c).join("");
+      if(x.length !== 6) return `rgba(37,99,235,${a})`;
+      const r = parseInt(x.slice(0,2), 16);
+      const g = parseInt(x.slice(2,4), 16);
+      const b = parseInt(x.slice(4,6), 16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    function statusBadgeClass(status){
+      const s = safeStr(status).toLowerCase();
+      if(!s) return "";
+      if(s.includes("ok") || s.includes("conclu") || s.includes("final")) return "blue";
+      return "";
+    }
+
+    function generateSummaryDashboard(){
+      // atualiza estado a partir dos inputs (por segurança)
+      const inpS = $("sumStart"), inpE = $("sumEnd"), inpT = $("sumTitleNote");
+      if(inpS) SUMMARY.startISO = inpS.value || SUMMARY.startISO || "";
+      if(inpE) SUMMARY.endISO = inpE.value || SUMMARY.endISO || "";
+      if(inpT) SUMMARY.titleNote = inpT.value || SUMMARY.titleNote || "";
+
+      const branches = (SUMMARY.branches || [])
+        .map(b=>{
+          const rotas = Math.max(0, Math.round(toNumberOrNull(b.rotas) || 0));
+          const erros = Math.max(0, Math.round(toNumberOrNull(b.erros) || 0));
+          return {
+            ...b,
+            filial: safeStr(b.filial),
+            responsavel: safeStr(b.responsavel),
+            status: safeStr(b.status),
+            rotas,
+            erros
+          };
+        })
+        .filter(b=> b.filial !== "" || b.responsavel !== "" || b.status !== "" || b.rotas !== 0 || b.erros !== 0);
+
+      if(!branches.length){
+        alert("Adicione pelo menos uma filial no Resumo.");
+        return;
+      }
+
+      // validação mínima
+      for(const b of branches){
+        if(!b.filial){
+          alert("Tem uma linha sem Filial. Preencha o nome da filial (ou remova a linha).");
+          return;
+        }
+        if(b.erros > b.rotas && b.rotas > 0){
+          // não impede, mas avisa
+          const ok = confirm(`Na filial "${b.filial}", você colocou ERROS (${b.erros}) maior que ROTAS (${b.rotas}). Quer manter assim?`);
+          if(!ok) return;
+        }
+      }
+
+      SUMMARY.branches = branches.map(b=>({
+        id: b.id, filial: b.filial, responsavel: b.responsavel, status: b.status, rotas: b.rotas, erros: b.erros
+      }));
+      saveSummary();
+      renderBranchTable();
+
+      const totalFiliais = branches.length;
+      const totalRotas = branches.reduce((a,b)=>a + b.rotas, 0);
+      const totalErros = branches.reduce((a,b)=>a + b.erros, 0);
+      const taxa = totalRotas > 0 ? (totalErros / totalRotas) : 0;
+
+      const startTxt = fmtBRFromISO(SUMMARY.startISO);
+      const endTxt = fmtBRFromISO(SUMMARY.endISO);
+      const periodo = (startTxt && endTxt) ? `${startTxt} - ${endTxt}` : (startTxt || endTxt || "—");
+      const note = safeStr(SUMMARY.titleNote);
+      const out = $("outPeriod");
+      if(out){
+        out.textContent = `${note ? (note + " • ") : ""}Período: ${periodo}`;
+      }
+
+      // KPIs
+      const kpi = $("kpiGrid");
+      if(kpi){
+        kpi.innerHTML = `
+          <div class="kpiCard">
+            <div class="k">Filiais</div>
+            <div class="v">${totalFiliais}</div>
+            <div class="s">Responsáveis e status por filial</div>
+          </div>
+          <div class="kpiCard">
+            <div class="k">Rotas</div>
+            <div class="v">${totalRotas}</div>
+            <div class="s">Total informado no período</div>
+          </div>
+          <div class="kpiCard">
+            <div class="k">Erros</div>
+            <div class="v">${totalErros}</div>
+            <div class="s">Somatório de erros</div>
+          </div>
+          <div class="kpiCard">
+            <div class="k">Taxa de erro</div>
+            <div class="v">${(taxa*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</div>
+            <div class="s">Erros / Rotas</div>
+          </div>
+        `;
+      }
+
+      // tabela detalhada
+      const outTable = $("summaryTableOut");
+      if(outTable){
+        const rows = branches.map(b=>{
+          const p = b.rotas > 0 ? (b.erros / b.rotas) : 0;
+          const badgeCls = statusBadgeClass(b.status);
+          return `
+            <tr>
+              <td><span class="badge blue">${escapeHtml(b.filial)}</span></td>
+              <td>${escapeHtml(b.responsavel || "-")}</td>
+              <td><span class="badge ${badgeCls}">${escapeHtml(b.status || "-")}</span></td>
+              <td class="num">${b.rotas}</td>
+              <td class="num">${b.erros}</td>
+              <td class="num">${(p*100).toLocaleString("pt-BR",{maximumFractionDigits:1})}%</td>
+            </tr>
+          `;
+        }).join("");
+
+        outTable.innerHTML = `
+          <table class="outTable">
+            <thead>
+              <tr>
+                <th>Filial</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th style="text-align:right">Rotas</th>
+                <th style="text-align:right">Erros</th>
+                <th style="text-align:right">% erro</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+      }
+
+      // gráficos
+      const labels = branches.map(b=>b.filial);
+      const dataRotas = branches.map(b=>b.rotas);
+      const dataErros = branches.map(b=>b.erros);
+
+      const styles = getComputedStyle(document.documentElement);
+      const blue = styles.getPropertyValue("--blue2").trim() || "#2563eb";
+      const red = styles.getPropertyValue("--danger").trim() || "#ef4444";
+
+      // Bar
+      const c1 = $("chartRotasErros");
+      if(c1 && window.Chart){
+        try{ if(SUMMARY_CHART_BAR) SUMMARY_CHART_BAR.destroy(); }catch(e){}
+        SUMMARY_CHART_BAR = new Chart(c1, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Rotas",
+                data: dataRotas,
+                backgroundColor: hexToRgba(blue, .20),
+                borderColor: hexToRgba(blue, .65),
+                borderWidth: 1.5,
+                borderRadius: 10
+              },
+              {
+                label: "Erros",
+                data: dataErros,
+                backgroundColor: hexToRgba(red, .16),
+                borderColor: hexToRgba(red, .65),
+                borderWidth: 1.5,
+                borderRadius: 10
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "top", labels: { boxWidth: 14, boxHeight: 14, font: { weight: "700" } } },
+              tooltip: { mode: "index", intersect: false }
+            },
+            scales: {
+              x: { ticks: { font: { weight: "700" } }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "rgba(219,230,255,.9)" } }
+            }
+          }
+        });
+      }
+
+      // Doughnut (distribuição de erros; se totalErros == 0, usa rotas)
+      const c2 = $("chartErrosShare");
+      if(c2 && window.Chart){
+        const useRotas = (totalErros === 0);
+        const donutData = useRotas ? dataRotas : dataErros;
+        const donutLabel = useRotas ? "Rotas" : "Erros";
+
+        const palette = [
+          hexToRgba(blue, .38),
+          "rgba(59,130,246,.28)",
+          "rgba(29,78,216,.20)",
+          "rgba(37,99,235,.14)",
+          "rgba(16,52,120,.12)",
+          "rgba(239,68,68,.20)",
+          "rgba(245,158,11,.22)",
+          "rgba(34,197,94,.18)"
+        ];
+
+        try{ if(SUMMARY_CHART_DONUT) SUMMARY_CHART_DONUT.destroy(); }catch(e){}
+        SUMMARY_CHART_DONUT = new Chart(c2, {
+          type: "doughnut",
+          data: {
+            labels,
+            datasets: [{
+              label: donutLabel,
+              data: donutData,
+              backgroundColor: labels.map((_,i)=> palette[i % palette.length]),
+              borderColor: "rgba(255,255,255,.85)",
+              borderWidth: 2,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "bottom", labels: { boxWidth: 12, boxHeight: 12, font: { weight:"700" } } },
+              tooltip: { callbacks: {
+                label: (ctx)=>{
+                  const v = Number(ctx.raw || 0);
+                  const sum = donutData.reduce((a,b)=>a+Number(b||0),0) || 1;
+                  const pct = (v/sum)*100;
+                  return ` ${ctx.label}: ${v} (${pct.toLocaleString("pt-BR",{maximumFractionDigits:1})}%)`;
+                }
+              } }
+            },
+            cutout: "62%"
+          }
+        });
+      }
+
+      // mostra output
+      const outPanel = $("summaryOutput");
+      if(outPanel){
+        outPanel.style.display = "block";
+        outPanel.scrollIntoView({behavior:"smooth", block:"start"});
+      }
+    }
+
+
+    // ==========================================================
+    // Eventos
+    // ==========================================================
+    $("file").addEventListener("change", (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(f) importExcel(f);
+      e.target.value = "";
+    });
+
+    $("filterType").addEventListener("change", render);
+    $("search").addEventListener("input", render);
+    $("btnDoc").addEventListener("click", generateDoc);
+
+
+    // ==========================================================
+    // Init — Tabs + Resumo salvo
+    // ==========================================================
+    document.querySelectorAll(".tabBtn").forEach(btn=>{
+      btn.addEventListener("click", (ev)=>{
+        ev.preventDefault();
+        setActiveTab(btn.getAttribute("data-tab"));
+      });
+    });
+
+    loadSummary();
+
+        // init
+    render();
+  </script>
+</body>
+</html>
