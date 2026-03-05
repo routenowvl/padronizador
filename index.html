@@ -721,7 +721,7 @@ button:active, .btn:active { transform: scale(0.97); }
           <form class="js-upload-form"
             id="uploadFormRoteiro"
             data-mode="roteiro"
-            action="https://n8n.datastack.viagroup.com.br/webhook/upload-arquivo"
+            action="https://n8n.datastack.viagroup.com.br/webhook-test/upload-arquivo"
             method="post"
             enctype="multipart/form-data"
           >
@@ -736,6 +736,8 @@ button:active, .btn:active { transform: scale(0.97); }
                   <div data-value="NESTLE">Nestlé</div>
                   <div data-value="DANONE">Danone</div>
                   <div data-value="LAT-PASSOS">Lat-Passos</div>
+                  <div data-value="ITALAC">Italac</div>
+                  <div data-value="BOM CONSELHO">Bom Conselho</div>
                   <div data-value="CATUPIRY">Catupiry - STV (NÃO UTILIZAR)</div>
                 </div>
               </div>
@@ -745,7 +747,7 @@ button:active, .btn:active { transform: scale(0.97); }
 
             <div class="form-group upload-area">
               <label>Arquivo</label>
-              <input id="fileInputRoteiro" type="file" name="file" accept=".csv,.pdf,.xls,.xlsx" required>
+              <input id="fileInputRoteiro" type="file" name="file" accept=".csv,.pdf,.xls,.xlsx" required multiple>
               <span>CSV, PDF, XLS ou XLSX</span>
             </div>
 
@@ -1263,9 +1265,9 @@ document.querySelectorAll('.js-upload-form').forEach(form => {
 
     if (mode === 'roteiro') {
       const empresa = form.querySelector('input[name="empresa"]')?.value;
-      const file = document.getElementById('fileInputRoteiro')?.files?.[0];
+      const files = document.getElementById('fileInputRoteiro')?.files;
       if (!empresa) { alert('Selecione a empresa'); return; }
-      if (!file) { alert('Selecione um arquivo'); return; }
+      if (!files || files.length === 0) { alert('Selecione um arquivo'); return; }
       currentTop = 'suporte';
     } else if (mode === 'importkm') {
       const filial = form.querySelector('input[name="filial"]')?.value;
